@@ -420,7 +420,7 @@ fun ArcNumberField(
 }
 
 /**
- * Arc Tag Input: for tags and grouping students/rubrics.
+ * Arc Tag Input: enter and manage caller-defined labels or categories.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -504,7 +504,7 @@ fun ArcTagInput(
 
 
 /**
- * Arc Inline Edit: tap to edit student name, number, or classroom label directly.
+ * Arc Inline Edit: edit caller-provided text in place.
  */
 @Composable
 fun ArcInlineEdit(

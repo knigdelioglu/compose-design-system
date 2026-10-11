@@ -58,13 +58,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 
 /**
- * Arc Hold to Confirm: long-press button with filling progress ring to protect critical irreversible actions (e.g., delete classroom, restore backup).
+ * Arc Hold to Confirm: long-press button with a filling progress ring for critical user-confirmed actions.
  */
 @Composable
 fun ArcHoldToConfirm(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Silmek için basılı tutun",
+    label: String = "Onaylamak için basılı tutun",
     confirmedLabel: String = "Tamamlandı",
     holdDurationMillis: Int = 1400,
     variant: ArcButtonVariant = ArcButtonVariant.Danger
@@ -82,7 +82,10 @@ fun ArcHoldToConfirm(
         isHolding = false
         holdJob?.cancel()
         holdJob = null
-        scope.launch { progress.animateTo(0f, animationSpec = tween(180)) }
+        scope.launch {
+            if (motion.reducedMotion) progress.snapTo(0f)
+            else progress.animateTo(0f, animationSpec = tween(motion.durationExit, easing = motion.easeExit))
+        }
     }
 
     fun startHold() {

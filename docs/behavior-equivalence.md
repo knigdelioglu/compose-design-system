@@ -26,17 +26,17 @@ Durumlar, yalnızca burada yazılan etkileşim kapsamını ifade eder:
 | Bileşen | Durum | Gözlenen eşdeğerlik / fark |
 | --- | --- | --- |
 | Checkbox, Switch, RadioGroup, RadioCards, SegmentedControl | Tam | Kontrollü seçim callback'leri ve Compose semantics üzerinden seçim etkileşimi UI testlerinde doğrulanır. |
-| `ArcDateRangePicker` | Kısmi | Tek başlangıç/bitiş seçimi, sıralı ISO tarih callback'i, aralık vurgusu ve 7/30/90 gün kısayolları. Tarih penceresi Material3 `DateRangePicker`'dır. |
+| `ArcDateRangePicker` | Bilinçli olarak farklı | Tek native Material3 aralık seçicisi; başlangıç/bitiş, vurgulu aralık, geçersiz sıralamanın düzeltilmesi ve 7/30/90 gün kısayolları. Tarih formatı ve pencere erişilebilirliği Android locale/Compose bileşeninden gelir. |
 | `ArcCombobox` | Tam | Arama, oklarla etkin sonuç, Enter seçimi, Escape kapatma, boş sonuç metni ve açılış odağı; arama ve klavye UI testleri. |
 | `ArcMultiSelect` | Tam | Kontrollü çoklu seçim, checkbox semantiği ve isteğe bağlı arama; arama ve birden çok seçimi koruma UI testi. |
-| `ArcContextMenu` | Kısmi | Uzun basma, Menü/Shift+F10 ve erişilebilir özel eylemle açılır; gerçek callback seçildiğinde kapanır. |
+| `ArcContextMenu` | Tam | Uzun basma, Menü/Shift+F10 ve TalkBack özel eylemi; ok tuşları, Enter/Space ve Escape; callback seçilince kapanış. Açılış ve klavye ile seçim UI testli. |
 | `ArcTheme` accent paletleri | Tam | Neutral, violet, blue, green, amber, orange, coral ve rose; açık/koyu semantic tokenlar ve ayrı chart serileri. JVM palette testi mevcut. |
-| Hareket tokenları | Kısmi | 120/160/180/240/480/580ms süreler, easing, spring, stagger ve blur tokenları. Her eski bileşen henüz ortak tokenlara taşınmadı. |
-| Reduced motion | Kısmi | Sistem animator ölçeği ve theme override; ortak spring/tween `snap` olur, stagger sıfırlanır. Tüm eski animasyonlar henüz merkezi token kullanmıyor. |
+| Hareket tokenları | Tam | 120/160/180/240/480/580ms süreler, easing, spring, stagger ve blur tokenları; görünen Compose geçişleri ortak süre/easing spec'lerini kullanır. |
+| Reduced motion | Tam | Sistem animator ölçeği ve theme override; geçişler snap olur, stagger sıfırlanır, sonsuz shimmer sabitlenir, otomatik liste kaydırma anlık olur. Hold-to-confirm süresi ve toast zaman aşımı görsel tercihten bağımsız kalır. |
 | `ArcSignaturePad` | Tam | Normalize stroke/point/pressure/zaman verisi, undo/redo/clear ve SVG/PNG dışa aktarımı; çizim ve dışa aktarım UI testi. |
-| `ArcSortableDataTable` | Kısmi | Kontrollü satır ve sayfa seçimi, sıralama öncesi sayfalama, dinamik sütun hesaplama ve sıralama semantiği. Sıralama/seçim/sayfalama akışı test edilir; değişen şema için ayrıca test yok. |
-| `ArcCommandPalette` | Kısmi | Arama, etkin sonuç, yukarı/aşağı, Enter/Escape, boş sonuç ve modal kapanışı. Odak geri yükleme platform Dialog'a bırakılır. |
-| Genel API metinleri | Kısmi | Tarih/arama/numara varsayılanları genelleştirildi; Kotlin çağrıları korunuyor. Spring tokenlarının dönüş tipi gibi kaynak geçişleri ve ikili tüketici yeniden derleme notu [API geçiş rehberinde](api-migration.md) açıklanıyor. Eski örnek KDoc'larında eğitim alanından kalan anlatımlar olabilir. |
+| `ArcSortableDataTable` | Tam | Kontrollü satır ve sayfa seçimi, küresel sıralama, sayfalama ve değişen sütun şemasında sort key korunması. Sıralama/seçim/sayfalama/şema geçişi testli. |
+| `ArcCommandPalette` | Tam | Arama, etkin sonuç, yukarı/aşağı, Enter/Escape, boş sonuç ve modal kapanışı; invoker odak geri yüklemesi için FocusRequester overload'u ve UI testi. |
+| Genel API metinleri | Tam | Tarih/arama/numara varsayılanları ve API açıklamaları alan bağımsızdır; Kotlin çağrıları korunuyor. Spring tokenlarının dönüş tipi ve ikili tüketici yeniden derleme notu [API geçiş rehberinde](api-migration.md) açıklanıyor. |
 
 ## P2 kapsam ve farklar
 

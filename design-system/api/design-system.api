@@ -820,6 +820,7 @@ public final class com/knigdelioglu/arc/compose/navigation/ArcNavComponentsKt {
 	public static final fun ArcCardStack (Ljava/util/List;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 	public static final fun ArcCarousel (Ljava/util/List;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
 	public static final fun ArcCommandPalette (ZLkotlin/jvm/functions/Function0;Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcCommandPalette (ZLkotlin/jvm/functions/Function0;Ljava/util/List;Landroidx/compose/ui/focus/FocusRequester;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 	public static final fun ArcDrawer (ZLkotlin/jvm/functions/Function0;Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 	public static final fun ArcPageHeader (Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
 	public static final fun ArcPagination (IILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
@@ -836,7 +837,7 @@ public final class com/knigdelioglu/arc/compose/navigation/ComposableSingletons$
 	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/navigation/ComposableSingletons$ArcNavComponentsKt;
 	public fun <init> ()V
 	public final fun getLambda$-1113574322$design_system_release ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$-1925796636$design_system_release ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1743406988$design_system_release ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-415304513$design_system_release ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1317281573$design_system_release ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$369764815$design_system_release ()Lkotlin/jvm/functions/Function2;

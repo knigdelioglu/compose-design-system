@@ -69,6 +69,11 @@ data class ArcMotionTokens(
         if (reducedMotion) return snap(delayMillis)
         return tween(durationMillis = durationFast, delayMillis = delayMillis, easing = easeStandard)
     }
+
+    internal fun <T> consideredTween(delayMillis: Int = 0): DurationBasedAnimationSpec<T> {
+        if (reducedMotion) return snap(delayMillis)
+        return tween(durationMillis = durationConsidered, delayMillis = delayMillis, easing = easeEnter)
+    }
 }
 
 val LocalArcMotion = staticCompositionLocalOf { ArcMotionTokens() }

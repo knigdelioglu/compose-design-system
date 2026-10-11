@@ -296,7 +296,7 @@ fun ArcUsageMeter(
 }
 
 /**
- * Arc Line Chart: score progress across assessment sessions.
+ * Arc Line Chart: values plotted over caller-defined x-axis labels.
  */
 @Composable
 fun ArcLineChart(
@@ -345,7 +345,7 @@ fun ArcLineChart(
 }
 
 /**
- * Arc Waffle Chart: 10x10 block grid displaying student completion percentage.
+ * Arc Waffle Chart: 10x10 block grid for displaying a normalized completion percentage.
  */
 @Composable
 fun ArcWaffleChart(

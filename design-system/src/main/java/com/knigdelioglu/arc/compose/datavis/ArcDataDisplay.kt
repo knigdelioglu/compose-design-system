@@ -1,15 +1,15 @@
 package com.knigdelioglu.arc.compose.datavis
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -110,7 +110,7 @@ fun ArcMetricCard(
 }
 
 /**
- * Arc Stats Band: horizontal block displaying Tamamlanan, Kısmi, Başlanmadı and Sınıf Ortalaması.
+ * Arc Stats Band: horizontal row of caller-defined labels, values, details, and dividers.
  */
 data class ArcStatItem(
     val label: String,
@@ -196,9 +196,16 @@ fun ArcSlotText(
     value: String,
     modifier: Modifier = Modifier
 ) {
+    val motion = ArcMotion.current
     AnimatedContent(
         targetState = value,
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        transitionSpec = {
+            if (motion.reducedMotion) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else {
+                fadeIn(motion.fastTween()) togetherWith fadeOut(motion.fastTween())
+            }
+        },
         label = "arcSlotText",
         modifier = modifier
     ) { target ->
@@ -219,9 +226,15 @@ fun ArcTextReveal(
     text: String,
     modifier: Modifier = Modifier
 ) {
-    val alpha = remember { Animatable(0f) }
-    LaunchedEffect(text) {
-        alpha.animateTo(1f, animationSpec = tween(600, easing = LinearEasing))
+    val motion = ArcMotion.current
+    val alpha = remember { Animatable(if (motion.reducedMotion) 1f else 0f) }
+    LaunchedEffect(text, motion.reducedMotion) {
+        if (motion.reducedMotion) {
+            alpha.snapTo(1f)
+        } else {
+            alpha.snapTo(0f)
+            alpha.animateTo(1f, animationSpec = motion.consideredTween())
+        }
     }
     Text(
         text = text,
@@ -239,9 +252,16 @@ fun ArcTextMorph(
     label: String,
     modifier: Modifier = Modifier
 ) {
+    val motion = ArcMotion.current
     AnimatedContent(
         targetState = label,
-        transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) },
+        transitionSpec = {
+            if (motion.reducedMotion) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else {
+                fadeIn(motion.fastTween()) togetherWith fadeOut(motion.fastTween())
+            }
+        },
         label = "arcTextMorph",
         modifier = modifier
     ) { currentLabel ->
@@ -262,16 +282,22 @@ fun ArcTextShimmer(
     text: String,
     modifier: Modifier = Modifier
 ) {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val alpha by transition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(700),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "shimmerAlpha"
-    )
+    val motion = ArcMotion.current
+    val alpha = if (motion.reducedMotion) {
+        1f
+    } else {
+        val transition = rememberInfiniteTransition(label = "shimmer")
+        val animatedAlpha by transition.animateFloat(
+            initialValue = 0.4f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = androidx.compose.animation.core.tween(motion.durationConsidered.coerceAtLeast(1)),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "shimmerAlpha"
+        )
+        animatedAlpha
+    }
 
     Text(
         text = text,
@@ -283,7 +309,7 @@ fun ArcTextShimmer(
 }
 
 /**
- * Arc Chip Group: horizontal filter chips for rubrics, classes, and assessment status.
+ * Arc Chip Group: horizontal filter chips for caller-defined categories and status values.
  */
 @Composable
 fun <T> ArcChipGroup(
@@ -375,9 +401,13 @@ fun <T> ArcSortableDataTable(
     selectedItems: Set<T> = emptySet(),
     onSelectionChanged: ((Set<T>) -> Unit)? = null
 ) {
-    var sortColumnIndex by remember { mutableStateOf<Int?>(null) }
+    // Keep the active sort attached to a column identity across caller-owned schema changes.
+    var sortColumnTitle by remember { mutableStateOf<String?>(null) }
     var sortAscending by remember { mutableStateOf(true) }
 
+    val sortColumnIndex = sortColumnTitle?.let { title ->
+        columns.indexOfFirst { it.title == title }.takeIf { it >= 0 }
+    }
     val sortedItems = remember(items, columns, sortColumnIndex, sortAscending) {
         val colIndex = sortColumnIndex
         if (colIndex != null) {
@@ -388,8 +418,7 @@ fun <T> ArcSortableDataTable(
         } else items
     }
 
-    // Sort the complete result first, then paginate. Per-page sorting hides matches
-    // on later pages and can reorder student numbers incorrectly.
+    // Sort the complete result first, then paginate so global ordering stays consistent.
     var requestedPage by remember(items) { mutableIntStateOf(1) }
     val window = pageSortedRows(sortedItems, pageSize, requestedPage)
     val pageCount = window.pageCount
@@ -436,7 +465,7 @@ fun <T> ArcSortableDataTable(
                                             if (sortColumnIndex == index) {
                                                 sortAscending = !sortAscending
                                             } else {
-                                                sortColumnIndex = index
+                                                sortColumnTitle = col.title
                                                 sortAscending = true
                                             }
                                         }.semantics {

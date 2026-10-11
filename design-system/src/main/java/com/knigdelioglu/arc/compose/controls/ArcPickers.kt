@@ -357,7 +357,7 @@ private fun ArcTimeField(
 }
 
 /**
- * Arc Color Picker: select rubric criterion color tags.
+ * Arc Color Picker: select a color from the available accent palette.
  */
 @Composable
 fun ArcColorPicker(

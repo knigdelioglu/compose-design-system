@@ -2,6 +2,10 @@ package com.knigdelioglu.arc.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
@@ -212,6 +216,38 @@ class CriticalComponentsTest {
     }
 
     @Test
+    fun contextMenuSupportsKeyboardInvocationAndArrowSelection() {
+        val selected = mutableListOf<String>()
+        compose.setContent {
+            ArcTheme {
+                ArcContextMenu(
+                    modifier = Modifier.testTag("context-menu-target"),
+                    content = { Text("Keyboard context target") },
+                    actions = listOf(
+                        ArcContextAction("First context action") { selected += "first" },
+                        ArcContextAction("Second context action") { selected += "second" }
+                    )
+                )
+            }
+        }
+        compose.onNodeWithTag("context-menu-target").performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        compose.onNodeWithTag("context-menu-target").performKeyInput { pressKey(Key.Menu) }
+        compose.onNodeWithText("First context action").assertExists()
+        compose.onNodeWithContentDescription("Context menu actions").assertIsFocused()
+        compose.onNodeWithContentDescription("Context menu actions").performKeyInput {
+            pressKey(Key.DirectionDown)
+            pressKey(Key.Enter)
+        }
+        compose.runOnIdle { assertEquals(listOf("second"), selected) }
+
+        compose.onNodeWithTag("context-menu-target").performSemanticsAction(SemanticsActions.RequestFocus) { it() }
+        compose.onNodeWithTag("context-menu-target").performKeyInput { withKeyDown(Key.ShiftLeft) { pressKey(Key.F10) } }
+        compose.onNodeWithContentDescription("Context menu actions").assertExists()
+        compose.onNodeWithContentDescription("Context menu actions").performKeyInput { pressKey(Key.Escape) }
+        compose.onNodeWithContentDescription("Context menu actions").assertDoesNotExist()
+    }
+
+    @Test
     fun sliderSupportsAccessibilityValueSetAndKeyboardStep() {
         var value by mutableStateOf(20f)
         var committed by mutableStateOf(Float.NaN)
@@ -419,6 +455,36 @@ class CriticalComponentsTest {
     }
 
     @Test
+    fun commandPaletteRestoresFocusToItsInvokerAfterEscape() {
+        val requester = FocusRequester()
+        var open by mutableStateOf(false)
+        compose.setContent {
+            ArcTheme {
+                Box(
+                    modifier = Modifier
+                        .testTag("palette-invoker")
+                        .focusRequester(requester)
+                        .focusable()
+                        .clickable { open = true }
+                ) { Text("Open command palette") }
+                ArcCommandPalette(
+                    isOpen = open,
+                    onClose = { open = false },
+                    actions = listOf(ArcCommandAction("noop", "No operation", "Test") {}),
+                    focusRestoreRequester = requester
+                )
+            }
+        }
+        compose.runOnIdle { requester.requestFocus() }
+        compose.onNodeWithTag("palette-invoker").assertIsFocused()
+        compose.onNodeWithTag("palette-invoker").performClick()
+        compose.onNode(hasSetTextAction()).assertIsFocused()
+        compose.onNode(hasSetTextAction()).performKeyInput { pressKey(Key.Escape) }
+        compose.runOnIdle { assertTrue(!open) }
+        compose.onNodeWithTag("palette-invoker").assertIsFocused()
+    }
+
+    @Test
     fun sortableTableKeepsControlledSelectionAcrossPages() {
         data class Row(val id: Int, val name: String)
         val rows = listOf(Row(1, "Zulu"), Row(2, "Amy"), Row(3, "Beta"))
@@ -446,6 +512,36 @@ class CriticalComponentsTest {
         compose.onNodeWithContentDescription("Sonraki Sayfa").performClick()
         compose.onNodeWithText("Zulu").assertExists()
         compose.runOnIdle { assertEquals(setOf(2, 3), selected.map { it.id }.toSet()) }
+    }
+
+    @Test
+    fun sortableTableDropsSortWhenTheSortedColumnIsRemovedFromDynamicSchema() {
+        data class Row(val id: Int, val name: String)
+        val rows = listOf(Row(3, "Zulu"), Row(1, "Amy"), Row(2, "Beta"))
+        var columns by mutableStateOf<List<ArcTableColumn<Row>>>(
+            listOf(ArcTableColumn("Name", comparator = compareBy { it.name }) { Text(it.name) })
+        )
+        compose.setContent {
+            ArcTheme {
+                ArcSortableDataTable(
+                    items = rows,
+                    columns = columns,
+                    rowKey = { it.id }
+                )
+            }
+        }
+        compose.onNodeWithText("Name").performClick()
+        assertTrue(
+            compose.onNodeWithText("Amy").fetchSemanticsNode().boundsInRoot.top <
+                compose.onNodeWithText("Beta").fetchSemanticsNode().boundsInRoot.top
+        )
+        compose.runOnIdle {
+            columns = listOf(ArcTableColumn("ID", comparator = compareBy { it.id }) { Text(it.id.toString()) })
+        }
+        assertTrue(
+            compose.onNodeWithText("3").fetchSemanticsNode().boundsInRoot.top <
+                compose.onNodeWithText("1").fetchSemanticsNode().boundsInRoot.top
+        )
     }
 
     @Test

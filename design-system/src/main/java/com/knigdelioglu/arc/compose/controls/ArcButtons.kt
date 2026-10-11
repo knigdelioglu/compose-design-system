@@ -145,7 +145,7 @@ fun ArcButton(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.animateContentSize()
+                modifier = Modifier.animateContentSize(animationSpec = motion.fastTween())
             ) {
                 if (loading) {
                     CircularProgressIndicator(
@@ -409,8 +409,8 @@ fun ArcExpandingButtonGroup(
                     icon()
                     AnimatedVisibility(
                         visible = selected,
-                        enter = if (motion.reducedMotion) androidx.compose.animation.EnterTransition.None else androidx.compose.animation.fadeIn(),
-                        exit = if (motion.reducedMotion) androidx.compose.animation.ExitTransition.None else androidx.compose.animation.fadeOut()
+                        enter = if (motion.reducedMotion) androidx.compose.animation.EnterTransition.None else androidx.compose.animation.fadeIn(motion.fastTween()),
+                        exit = if (motion.reducedMotion) androidx.compose.animation.ExitTransition.None else androidx.compose.animation.fadeOut(motion.fastTween())
                     ) {
                         Row {
                             Spacer(Modifier.width(6.dp))

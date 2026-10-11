@@ -136,8 +136,8 @@ fun ArcExpandableCard(
             }
             AnimatedVisibility(
                 visible = expanded,
-                enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(),
-                exit = if (motion.reducedMotion) ExitTransition.None else fadeOut()
+                enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(motion.fastTween()),
+                exit = if (motion.reducedMotion) ExitTransition.None else fadeOut(motion.fastTween())
             ) {
                 Column {
                     Spacer(Modifier.height(12.dp))
@@ -350,7 +350,8 @@ fun ArcSkeleton(
     modifier: Modifier = Modifier,
     shape: Shape = ArcTheme.shapes.control
 ) {
-    if (ArcTheme.motion.reducedMotion) {
+    val motion = ArcMotion.current
+    if (motion.reducedMotion) {
         Box(modifier = modifier.clip(shape).background(ArcTheme.colors.surfaceMuted))
     } else {
         val alpha = if (ArcMotion.current.reducedMotion) {
@@ -361,7 +362,7 @@ fun ArcSkeleton(
                 initialValue = 0.3f,
                 targetValue = 0.8f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(800),
+                    animation = tween(motion.durationStandard.coerceAtLeast(1)),
                     repeatMode = RepeatMode.Reverse
                 ),
                 label = "skeletonAlpha"
@@ -454,8 +455,8 @@ fun ArcAccordion(
                     }
                     AnimatedVisibility(
                         visible = isExpanded,
-                        enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(),
-                        exit = if (motion.reducedMotion) ExitTransition.None else fadeOut()
+                        enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(motion.fastTween()),
+                        exit = if (motion.reducedMotion) ExitTransition.None else fadeOut(motion.fastTween())
                     ) {
                         Column {
                             Spacer(Modifier.height(8.dp))

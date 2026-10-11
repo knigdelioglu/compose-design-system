@@ -1,6 +1,6 @@
 # API compatibility and migration
 
-This update preserves existing Kotlin call sites. New parameters have defaults, existing parameter names and types remain unchanged, and the original `ArcTheme(darkTheme, reducedMotion, content)` overload remains available.
+This update preserves existing Kotlin call sites. New parameters have defaults, existing parameter names and types remain unchanged, and the original `ArcTheme(darkTheme, reducedMotion, content)` overload remains available. Generic components now use domain-neutral Turkish placeholder and confirmation labels by default; pass the existing label parameters to restore application-specific wording.
 
 ## Additions
 
@@ -20,6 +20,8 @@ This update preserves existing Kotlin call sites. New parameters have defaults, 
 | `ArcSortableDataTable` | Optional controlled row selection | Existing tables remain unselected unless selection is supplied. |
 | Charts | Optional accessible descriptions and value bounds | Existing calls retain their existing visual configuration. |
 | `ArcInput`, `ArcSearchField` | Optional text-field modifier for focus and key routing | Existing component modifiers keep their previous placement. |
+| `ArcCommandPalette` | `FocusRequester` overload for deterministic invoker focus restoration | Existing calls keep platform-managed dialog focus behavior; pass a requester attached to the invoker to restore it explicitly. |
+| `ArcRichTextEditor`, `ArcHoldToConfirm` | Domain-neutral default placeholder and confirmation text | Existing parameter overrides remain unchanged; callers using defaults see generic labels. |
 
 Call sites that store `ArcMotionTokens.springResponsive()` (or another spring helper) in a `SpringSpec<T>` variable should widen that variable to `FiniteAnimationSpec<T>`. The wider type is needed because reduced motion may return a snap spec.
 

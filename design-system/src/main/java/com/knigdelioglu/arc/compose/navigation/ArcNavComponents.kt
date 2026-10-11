@@ -93,8 +93,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Arc Page Header:
- * Clean, informative workspace top bar for tablets carrying Classroom context,
- * Rubric title, status badges, and top-level action controls.
+ * Clean, informative workspace top bar for a title, status badges, and top-level actions.
  */
 @Composable
 fun ArcPageHeader(
@@ -148,7 +147,7 @@ fun ArcPageHeader(
 }
 
 /**
- * Arc Breadcrumb: hierarchy navigation (Sınıflar > 11-A > Tiyatro Canlandırma).
+ * Arc Breadcrumb: hierarchy navigation for caller-defined routes and locations.
  */
 @Composable
 fun ArcBreadcrumb(
@@ -246,7 +245,7 @@ fun ArcTabs(
 }
 
 /**
- * Arc Drawer: tablet slide-out panel for details, filters, and student editor.
+ * Arc Drawer: slide-out panel for details, filters, and caller-provided editing content.
  */
 @Composable
 fun ArcDrawer(
@@ -332,7 +331,42 @@ fun ArcCommandPalette(
     onClose: () -> Unit,
     actions: List<ArcCommandAction>,
     modifier: Modifier = Modifier
+) = ArcCommandPaletteImpl(isOpen, onClose, actions, modifier, focusRestoreRequester = null)
+
+/**
+ * Command palette overload for hosts that need deterministic focus restoration after dismissal.
+ * Attach [focusRestoreRequester] to the control that opened the palette.
+ */
+@Composable
+fun ArcCommandPalette(
+    isOpen: Boolean,
+    onClose: () -> Unit,
+    actions: List<ArcCommandAction>,
+    focusRestoreRequester: FocusRequester,
+    modifier: Modifier = Modifier
+) = ArcCommandPaletteImpl(isOpen, onClose, actions, modifier, focusRestoreRequester)
+
+@Composable
+private fun ArcCommandPaletteImpl(
+    isOpen: Boolean,
+    onClose: () -> Unit,
+    actions: List<ArcCommandAction>,
+    modifier: Modifier,
+    focusRestoreRequester: FocusRequester?
 ) {
+    var shouldRestoreFocus by remember { mutableStateOf(false) }
+    val closePalette = {
+        shouldRestoreFocus = true
+        onClose()
+    }
+    androidx.compose.runtime.LaunchedEffect(isOpen, shouldRestoreFocus) {
+        if (!isOpen && shouldRestoreFocus) {
+            androidx.compose.runtime.withFrameNanos { }
+            focusRestoreRequester?.requestFocus()
+            shouldRestoreFocus = false
+        }
+    }
+
     if (isOpen) {
         var query by remember { mutableStateOf("") }
         val filtered = remember(query, actions) {
@@ -349,7 +383,10 @@ fun ArcCommandPalette(
         val motion = com.knigdelioglu.arc.compose.foundation.ArcMotion.current
 
         androidx.compose.runtime.LaunchedEffect(activeIndex, filtered.size) {
-            if (filtered.isNotEmpty()) listState.animateScrollToItem(activeIndex.coerceIn(filtered.indices))
+            if (filtered.isNotEmpty()) {
+                val index = activeIndex.coerceIn(filtered.indices)
+                if (motion.reducedMotion) listState.scrollToItem(index) else listState.animateScrollToItem(index)
+            }
         }
         val searchInputModifier = Modifier
             .focusRequester(searchFocusRequester)
@@ -367,16 +404,16 @@ fun ArcCommandPalette(
                     Key.Enter, Key.NumPadEnter -> {
                         filtered.getOrNull(activeIndex)?.let { action ->
                             action.onExecute()
-                            onClose()
+                            closePalette()
                         }
                         true
                     }
-                    Key.Escape -> { onClose(); true }
+                    Key.Escape -> { closePalette(); true }
                     else -> false
                 }
             }
 
-        Dialog(onDismissRequest = onClose) {
+        Dialog(onDismissRequest = closePalette) {
             Surface(
                 modifier = modifier
                     .fillMaxWidth(0.9f)
@@ -395,11 +432,11 @@ fun ArcCommandPalette(
                             Key.Enter, Key.NumPadEnter -> {
                                 filtered.getOrNull(activeIndex)?.let { action ->
                                     action.onExecute()
-                                    onClose()
+                                    closePalette()
                                 }
                                 true
                             }
-                            Key.Escape -> { onClose(); true }
+                            Key.Escape -> { closePalette(); true }
                             else -> false
                         }
                     },
@@ -439,7 +476,7 @@ fun ArcCommandPalette(
                                     .background(rowColor)
                                     .clickable {
                                         action.onExecute()
-                                        onClose()
+                                        closePalette()
                                     }
                                     .semantics { selected = isActive }
                                     .padding(horizontal = 14.dp, vertical = 12.dp),

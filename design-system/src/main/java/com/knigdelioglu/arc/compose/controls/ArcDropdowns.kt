@@ -159,6 +159,7 @@ fun <T> ArcCombobox(
     var isOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
     val colors = ArcTheme.colors
+    val motion = ArcMotion.current
 
     Box(modifier = modifier) {
         Surface(
@@ -197,7 +198,10 @@ fun <T> ArcCombobox(
             val searchFocusRequester = remember { FocusRequester() }
             val listState = rememberLazyListState()
             androidx.compose.runtime.LaunchedEffect(activeIndex, filtered.size) {
-                if (filtered.isNotEmpty()) listState.animateScrollToItem(activeIndex.coerceIn(filtered.indices))
+                if (filtered.isNotEmpty()) {
+                    val index = activeIndex.coerceIn(filtered.indices)
+                    if (motion.reducedMotion) listState.scrollToItem(index) else listState.animateScrollToItem(index)
+                }
             }
             val searchInputModifier = Modifier
                 .focusRequester(searchFocusRequester)
@@ -571,6 +575,9 @@ fun ArcContextMenu(
     actions: List<ArcContextAction> = emptyList()
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val actionLabels = actions.map(ArcContextAction::label)
+    var activeIndex by remember(actionLabels) { mutableStateOf(0) }
+    val menuFocusRequester = remember { FocusRequester() }
 
     Box(
         modifier = modifier
@@ -579,6 +586,7 @@ fun ArcContextMenu(
                 if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
                 val native = event.nativeKeyEvent
                 if (event.key == Key.Menu || (event.key == Key.F10 && native.isShiftPressed)) {
+                    activeIndex = 0
                     expanded = true
                     true
                 } else false
@@ -600,16 +608,58 @@ fun ArcContextMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            actions.forEach { action ->
-                DropdownMenuItem(
-                    text = { Text(action.label) },
-                    onClick = {
-                        expanded = false
-                        action.onSelect()
+            Column(
+                modifier = Modifier
+                    .semantics { contentDescription = "Context menu actions" }
+                    .focusRequester(menuFocusRequester)
+                    .focusable()
+                    .onPreviewKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                        when (event.key) {
+                            Key.DirectionDown -> {
+                                if (actions.isEmpty()) false else {
+                                    activeIndex = (activeIndex + 1).coerceAtMost(actions.lastIndex)
+                                    true
+                                }
+                            }
+                            Key.DirectionUp -> {
+                                if (actions.isEmpty()) false else {
+                                    activeIndex = (activeIndex - 1).coerceAtLeast(0)
+                                    true
+                                }
+                            }
+                            Key.Enter, Key.NumPadEnter, Key.Spacebar -> {
+                                actions.getOrNull(activeIndex)?.let { action ->
+                                    expanded = false
+                                    action.onSelect()
+                                }
+                                actions.isNotEmpty()
+                            }
+                            Key.Escape -> {
+                                expanded = false
+                                true
+                            }
+                            else -> false
+                        }
                     }
-                )
+            ) {
+                androidx.compose.runtime.LaunchedEffect(menuFocusRequester) {
+                    menuFocusRequester.requestFocus()
+                }
+                actions.forEachIndexed { index, action ->
+                    DropdownMenuItem(
+                        modifier = Modifier
+                            .background(if (activeIndex == index) ArcTheme.colors.accentSubtle else Color.Transparent)
+                            .semantics { selected = activeIndex == index },
+                        text = { Text(action.label) },
+                        onClick = {
+                            expanded = false
+                            action.onSelect()
+                        }
+                    )
+                }
+                menuContent()
             }
-            menuContent()
         }
     }
 }
