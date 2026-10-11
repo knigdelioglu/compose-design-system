@@ -3,8 +3,11 @@ package com.knigdelioglu.arc.compose.controls
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -19,6 +22,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +39,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -36,6 +48,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -89,15 +102,20 @@ fun ArcElasticSlider(
 ) {
     val min = valueRange.start
     val max = valueRange.endInclusive
-    val span = (max - min).coerceAtLeast(1f)
+    val validRange = min.isFinite() && max.isFinite() && max > min
+    val safeMin = min.takeIf(Float::isFinite) ?: 0f
+    val safeMax = max.takeIf { it.isFinite() && it > safeMin } ?: (safeMin + 1f)
+    val safeStep = step?.takeIf { it.isFinite() && it > 0f }
+    val span = safeMax - safeMin
+    val safeValue = normalizeArcSliderValue(value, safeMin, safeMax, safeStep)
 
     var isDragging by remember { mutableStateOf(false) }
-    var currentDragValue by remember(value) { mutableFloatStateOf(value) }
-    val displayValue = if (isDragging) currentDragValue else value
+    val sliderFocusRequester = remember { FocusRequester() }
+    var currentDragValue by remember(value, safeMin, safeMax, safeStep) { mutableFloatStateOf(safeValue) }
+    var elasticOffsetRatio by remember { mutableFloatStateOf(0f) }
+    val displayValue = if (isDragging) currentDragValue else safeValue
+    val fraction = ((displayValue - safeMin) / span).coerceIn(0f, 1f)
 
-    val fraction = ((displayValue - min) / span).coerceIn(0f, 1f)
-
-    // Respect ArcTheme(reducedMotion=true) rather than using Compose defaults.
     val motion = ArcMotion.current
     val thumbElevation by animateDpAsState(
         targetValue = if (isDragging) 6.dp else 2.dp,
@@ -109,9 +127,33 @@ fun ArcElasticSlider(
         animationSpec = motion.fastTween(),
         label = "arcSliderThumbSize"
     )
-
     val colors = ArcTheme.colors
     val density = LocalDensity.current
+    val interactionEnabled = enabled && validRange
+
+    fun setFromPosition(x: Float, start: Boolean = false, usableWidthPx: Float, thumbRadiusPx: Float) {
+        val previous = currentDragValue
+        val rawRatio = (x - thumbRadiusPx) / usableWidthPx
+        val boundedRatio = rawRatio.coerceIn(0f, 1f)
+        elasticOffsetRatio = if (elasticOvershoot && rawRatio !in 0f..1f) {
+            val beyond = if (rawRatio < 0f) rawRatio else rawRatio - 1f
+            (beyond / (1f + kotlin.math.abs(beyond) * 5f)).coerceIn(-0.12f, 0.12f)
+        } else 0f
+        val next = normalizeArcSliderValue(safeMin + boundedRatio * span, safeMin, safeMax, safeStep)
+        currentDragValue = next
+        if (start || next != previous) onValueChange(next)
+    }
+
+    fun stepBy(delta: Float) {
+        if (!interactionEnabled) return
+        val interval = safeStep ?: (span / 100f)
+        val next = normalizeArcSliderValue(displayValue + interval * delta, safeMin, safeMax, safeStep)
+        if (next != displayValue) {
+            currentDragValue = next
+            onValueChange(next)
+        }
+        onValueCommit?.invoke(next)
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (label != null) {
@@ -119,19 +161,8 @@ fun ArcElasticSlider(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = label,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.textSecondary,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = formatValue(displayValue),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.foreground
-                )
+                Text(label, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = colors.textSecondary, modifier = Modifier.weight(1f))
+                Text(formatValue(displayValue), fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
             }
         }
 
@@ -139,21 +170,44 @@ fun ArcElasticSlider(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
+                .focusRequester(sliderFocusRequester)
+                .focusable(enabled = interactionEnabled)
                 .semantics {
+                    contentDescription = label ?: "Değer"
                     progressBarRangeInfo = ProgressBarRangeInfo(
                         current = displayValue,
-                        range = valueRange,
-                        steps = if (step != null) ((max - min) / step).toInt() else 0
+                        range = safeMin..safeMax,
+                        steps = safeStep?.let { ((span / it).toInt() - 1).coerceAtLeast(0) } ?: 0
                     )
+                    if (!interactionEnabled) disabled()
+                    setProgress { requested ->
+                        if (!interactionEnabled || !requested.isFinite()) false
+                        else {
+                            val next = normalizeArcSliderValue(requested, safeMin, safeMax, safeStep)
+                            currentDragValue = next
+                            onValueChange(next)
+                            onValueCommit?.invoke(next)
+                            true
+                        }
+                    }
+                }
+                .onKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown || !interactionEnabled) return@onKeyEvent false
+                    when (event.key) {
+                        Key.DirectionLeft, Key.DirectionDown -> { stepBy(-1f); true }
+                        Key.DirectionRight, Key.DirectionUp -> { stepBy(1f); true }
+                        Key.MoveHome -> { currentDragValue = safeMin; onValueChange(safeMin); onValueCommit?.invoke(safeMin); true }
+                        Key.MoveEnd -> { currentDragValue = safeMax; onValueChange(safeMax); onValueCommit?.invoke(safeMax); true }
+                        else -> false
+                    }
                 },
             contentAlignment = Alignment.CenterStart
         ) {
-            val trackWidthPx = with(density) { maxWidth.toPx() }
             val thumbRadiusPx = with(density) { 12.dp.toPx() }
+            val trackWidthPx = with(density) { maxWidth.toPx() }
             val usableWidthPx = (trackWidthPx - thumbRadiusPx * 2).coerceAtLeast(1f)
-
-            // Value bubble hanging above the thumb
-            val thumbCenterX = thumbRadiusPx + (usableWidthPx * fraction)
+            val thumbCenterX = thumbRadiusPx + usableWidthPx * fraction +
+                (if (isDragging) elasticOffsetRatio * usableWidthPx else 0f)
 
             if (isDragging) {
                 Box(
@@ -169,42 +223,15 @@ fun ArcElasticSlider(
                         .padding(horizontal = 10.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = formatValue(displayValue),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.accentForeground
-                    )
+                    Text(formatValue(displayValue), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = colors.accentForeground)
                 }
             }
 
-            // Track background
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(ArcTheme.shapes.pill)
-                    .background(colors.controlTrack)
-            )
-
-            // Active Track Fill
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction)
-                    .height(8.dp)
-                    .clip(ArcTheme.shapes.pill)
-                    .background(colors.controlOn)
-            )
-
-            // Thumb
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(ArcTheme.shapes.pill).background(colors.controlTrack))
+            Box(Modifier.fillMaxWidth(fraction).height(8.dp).clip(ArcTheme.shapes.pill).background(colors.controlOn))
             Surface(
                 modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            x = (usableWidthPx * fraction).roundToInt(),
-                            y = 0
-                        )
-                    }
+                    .offset { IntOffset((usableWidthPx * fraction + (if (isDragging) elasticOffsetRatio * usableWidthPx else 0f)).roundToInt(), 0) }
                     .size(thumbSize)
                     .shadow(thumbElevation, CircleShape),
                 shape = CircleShape,
@@ -212,72 +239,34 @@ fun ArcElasticSlider(
                 border = BorderStroke(1.dp, colors.borderStrong.copy(alpha = 0.4f))
             ) {}
 
-            // Pointer input overlay
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .pointerInput(enabled, min, max, usableWidthPx) {
-                        if (!enabled) return@pointerInput
-
-                        detectTapGestures(
-                            onPress = { offset ->
+                    .pointerInput(interactionEnabled, safeMin, safeMax, safeStep, usableWidthPx, elasticOvershoot) {
+                        if (!interactionEnabled) return@pointerInput
+                        try {
+                            awaitEachGesture {
+                                val down = awaitFirstDown(requireUnconsumed = false)
+                                sliderFocusRequester.requestFocus()
                                 isDragging = true
-                                val rawRatio = ((offset.x - thumbRadiusPx) / usableWidthPx).coerceIn(0f, 1f)
-                                val calculated = min + (rawRatio * span)
-                                val snapped = if (step != null && step > 0) {
-                                    val steps = ((calculated - min) / step).roundToInt()
-                                    (min + steps * step).coerceIn(min, max)
-                                } else calculated
-
-                                currentDragValue = snapped
-                                onValueChange(snapped)
-
-                                try {
-                                    awaitRelease()
-                                    onValueCommit?.invoke(currentDragValue)
-                                } finally {
-                                    isDragging = false
+                                setFromPosition(down.position.x, start = true, usableWidthPx = usableWidthPx, thumbRadiusPx = thumbRadiusPx)
+                                var released = false
+                                while (!released) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull() ?: break
+                                    setFromPosition(change.position.x, usableWidthPx = usableWidthPx, thumbRadiusPx = thumbRadiusPx)
+                                    change.consume()
+                                    released = !change.pressed
                                 }
-                            }
-                        )
-                    }
-                    .pointerInput(enabled, min, max, usableWidthPx) {
-                        if (!enabled) return@pointerInput
-
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                isDragging = true
-                                val rawRatio = ((offset.x - thumbRadiusPx) / usableWidthPx).coerceIn(0f, 1f)
-                                val calculated = min + (rawRatio * span)
-                                val snapped = if (step != null && step > 0) {
-                                    val steps = ((calculated - min) / step).roundToInt()
-                                    (min + steps * step).coerceIn(min, max)
-                                } else calculated
-
-                                currentDragValue = snapped
-                                onValueChange(snapped)
-                            },
-                            onDrag = { change, _ ->
-                                change.consume()
-                                val rawRatio = ((change.position.x - thumbRadiusPx) / usableWidthPx).coerceIn(0f, 1f)
-                                val calculated = min + (rawRatio * span)
-                                val snapped = if (step != null && step > 0) {
-                                    val steps = ((calculated - min) / step).roundToInt()
-                                    (min + steps * step).coerceIn(min, max)
-                                } else calculated
-
-                                currentDragValue = snapped
-                                onValueChange(snapped)
-                            },
-                            onDragEnd = {
                                 isDragging = false
+                                elasticOffsetRatio = 0f
                                 onValueCommit?.invoke(currentDragValue)
-                            },
-                            onDragCancel = {
-                                isDragging = false
                             }
-                        )
+                        } finally {
+                            isDragging = false
+                            elasticOffsetRatio = 0f
+                        }
                     }
             )
         }

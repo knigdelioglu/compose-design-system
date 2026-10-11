@@ -89,7 +89,7 @@ fun ArcCard(
 }
 
 /**
- * Arc Expandable Card: card with fluid expand/collapse toggle for long rubric descriptions or evidence notes.
+ * Arc Expandable Card: card with fluid expand/collapse toggle for long descriptions or supporting notes.
  */
 @Composable
 fun ArcExpandableCard(
@@ -136,8 +136,8 @@ fun ArcExpandableCard(
             }
             AnimatedVisibility(
                 visible = expanded,
-                enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(),
-                exit = if (motion.reducedMotion) ExitTransition.None else fadeOut()
+                enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(motion.fastTween()),
+                exit = if (motion.reducedMotion) ExitTransition.None else fadeOut(motion.fastTween())
             ) {
                 Column {
                     Spacer(Modifier.height(12.dp))
@@ -190,7 +190,7 @@ fun ArcBadge(
 }
 
 /**
- * Arc Avatar: student initials avatar without exposing unnecessary photos or PII.
+ * Arc Avatar: initials avatar that can avoid exposing unnecessary photos or personal data.
  */
 @Composable
 fun ArcAvatar(
@@ -350,7 +350,8 @@ fun ArcSkeleton(
     modifier: Modifier = Modifier,
     shape: Shape = ArcTheme.shapes.control
 ) {
-    if (ArcTheme.motion.reducedMotion) {
+    val motion = ArcMotion.current
+    if (motion.reducedMotion) {
         Box(modifier = modifier.clip(shape).background(ArcTheme.colors.surfaceMuted))
     } else {
         val alpha = if (ArcMotion.current.reducedMotion) {
@@ -361,7 +362,7 @@ fun ArcSkeleton(
                 initialValue = 0.3f,
                 targetValue = 0.8f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(800),
+                    animation = tween(motion.durationStandard.coerceAtLeast(1)),
                     repeatMode = RepeatMode.Reverse
                 ),
                 label = "skeletonAlpha"
@@ -377,7 +378,7 @@ fun ArcSkeleton(
 }
 
 /**
- * Arc Empty State: guidance placeholder when classroom, rubric, or results are empty.
+ * Arc Empty State: guidance placeholder for an empty collection or result set.
  */
 @Composable
 fun ArcEmptyState(
@@ -454,8 +455,8 @@ fun ArcAccordion(
                     }
                     AnimatedVisibility(
                         visible = isExpanded,
-                        enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(),
-                        exit = if (motion.reducedMotion) ExitTransition.None else fadeOut()
+                        enter = if (motion.reducedMotion) EnterTransition.None else fadeIn(motion.fastTween()),
+                        exit = if (motion.reducedMotion) ExitTransition.None else fadeOut(motion.fastTween())
                     ) {
                         Column {
                             Spacer(Modifier.height(8.dp))
@@ -610,7 +611,7 @@ fun ArcThemeSwitch(
 }
 
 /**
- * Arc Copy Button: copies student ID or report link to clipboard with brief check indicator.
+ * Arc Copy Button: copies text to the clipboard with a brief check indicator.
  */
 @Composable
 fun ArcCopyButton(

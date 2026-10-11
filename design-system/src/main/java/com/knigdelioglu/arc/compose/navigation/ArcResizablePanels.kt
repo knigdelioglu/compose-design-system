@@ -1,49 +1,55 @@
 package com.knigdelioglu.arc.compose.navigation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import com.knigdelioglu.arc.compose.foundation.ArcMotion
+import com.knigdelioglu.arc.compose.controls.normalizePanelWeights
+import com.knigdelioglu.arc.compose.controls.resizeAdjacentPanelWeights
 import com.knigdelioglu.arc.compose.foundation.ArcTheme
 
 /**
- * Arc Resizable Panels:
- * Essential for 11-inch tablet workspace. Divides the screen into resizable left/middle/right
- * panes (e.g. Student List <-> Rubric Criteria <-> Scoring Controls) with draggable dividers,
- * minimum constraints, and optional collapse toggles.
+ * Resizable two or three pane layout. Pane weights always sum to one, and moving a divider
+ * redistributes only the two panes touching it. Narrow windows switch to vertical panes.
  */
 @Composable
 fun ArcResizablePanels(
@@ -52,82 +58,100 @@ fun ArcResizablePanels(
     minWeights: List<Float> = listOf(0.18f, 0.25f, 0.20f),
     firstPane: @Composable () -> Unit,
     secondPane: @Composable () -> Unit,
-    thirdPane: (@Composable () -> Unit)? = null
+    thirdPane: (@Composable () -> Unit)? = null,
+    maxWeights: List<Float> = listOf(0.82f, 0.82f, 0.82f),
+    collapsiblePanes: Set<Int> = emptySet(),
+    onWeightsChanged: ((List<Float>) -> Unit)? = null
 ) {
-    val paneCount = if (thirdPane != null) 3 else 2
-    var weights by remember {
-        mutableStateOf(
-            if (paneCount == 2) {
-                listOf(initialWeights.getOrElse(0) { 0.4f }, initialWeights.getOrElse(1) { 0.6f })
-            } else {
-                initialWeights
-            }
-        )
+    val panes: List<@Composable () -> Unit> = if (thirdPane == null) listOf(firstPane, secondPane)
+    else listOf(firstPane, secondPane, thirdPane)
+    val paneCount = panes.size
+    val minimums = (0 until paneCount).map { index ->
+        val requested = minWeights.getOrElse(index) { 0.18f }.coerceAtLeast(0f)
+        if (index in collapsiblePanes) minOf(requested, 0.04f) else requested
+    }
+    val maximums = (0 until paneCount).map { index ->
+        maxWeights.getOrElse(index) { 0.82f }.coerceAtLeast(minimums[index])
+    }
+    val resetWeights = remember(paneCount, initialWeights, minimums, maximums) {
+        val defaults = if (paneCount == 2 && initialWeights.size != 2) listOf(0.4f, 0.6f) else initialWeights
+        normalizePanelWeights(defaults, paneCount, minimums, maximums)
+    }
+    var weights by remember(paneCount, resetWeights) { mutableStateOf(resetWeights) }
+    var savedWidths by remember(paneCount) { mutableStateOf(emptyMap<Int, Float>()) }
+    LaunchedEffect(weights) { onWeightsChanged?.invoke(weights) }
+
+    fun resizeDivider(index: Int, deltaRatio: Float) {
+        weights = resizeAdjacentPanelWeights(weights, index, deltaRatio, minimums, maximums)
+    }
+
+    fun reset() {
+        weights = resetWeights
+        savedWidths = emptyMap()
+    }
+
+    fun toggleCollapse(index: Int) {
+        val trailing = index + 1
+        if (trailing !in collapsiblePanes) return
+        val current = weights[trailing]
+        val collapsed = current <= 0.05f
+        val pairTotal = weights[index] + current
+        val targetTrailing = if (collapsed) {
+            savedWidths[index]?.coerceIn(minimums[trailing], pairTotal - minimums[index])
+                ?: resetWeights[trailing].coerceIn(minimums[trailing], pairTotal - minimums[index])
+        } else {
+            savedWidths = savedWidths + (index to current)
+            0.04f.coerceIn(minimums[trailing], pairTotal - minimums[index])
+        }
+        val targetLeading = pairTotal - targetTrailing
+        weights = weights.toMutableList().also {
+            it[index] = targetLeading
+            it[trailing] = targetTrailing
+        }
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val totalWidthPx = with(LocalDensity.current) { maxWidth.toPx() }
-        val dividerWidthDp = 12.dp
-        val dividerWidthPx = with(LocalDensity.current) { dividerWidthDp.toPx() }
+        val horizontal = maxWidth >= 600.dp
+        val density = LocalDensity.current
+        val dividerThickness = 14.dp
+        val dividerCount = paneCount - 1
+        val axisSizePx = with(density) { (if (horizontal) maxWidth else maxHeight).toPx() }
+        val paneAreaPx = (axisSizePx - with(density) { dividerThickness.toPx() } * dividerCount).coerceAtLeast(1f)
 
-        Row(modifier = Modifier.fillMaxSize()) {
-            // First Pane
-            Box(
-                modifier = Modifier
-                    .weight(weights[0].coerceAtLeast(0.05f))
-                    .fillMaxHeight()
-            ) {
-                firstPane()
-            }
-
-            // Divider 1
-            ArcPanelDivider(
-                onDelta = { deltaPx ->
-                    val deltaRatio = deltaPx / totalWidthPx
-                    val newW0 = (weights[0] + deltaRatio).coerceIn(minWeights[0], 0.6f)
-                    val diff = newW0 - weights[0]
-                    val newW1 = (weights[1] - diff).coerceAtLeast(minWeights.getOrElse(1) { 0.2f })
-                    weights = if (paneCount == 2) {
-                        listOf(newW0, newW1)
-                    } else {
-                        listOf(newW0, newW1, weights[2])
+        if (horizontal) {
+            Row(Modifier.fillMaxSize()) {
+                panes.forEachIndexed { index, pane ->
+                    Box(Modifier.weight(weights[index]).fillMaxHeight()) { pane() }
+                    if (index < paneCount - 1) {
+                        ArcPanelDivider(
+                            horizontal = true,
+                            value = weights[index],
+                            valueRange = minimums[index]..maximums[index],
+                            canCollapse = index + 1 in collapsiblePanes,
+                            onDelta = { resizeDivider(index, it / paneAreaPx) },
+                            onAdjust = { resizeDivider(index, it) },
+                            onReset = ::reset,
+                            onToggleCollapse = { toggleCollapse(index) }
+                        )
                     }
-                },
-                onDoubleTapReset = {
-                    weights = if (paneCount == 2) listOf(0.4f, 0.6f) else listOf(0.30f, 0.40f, 0.30f)
                 }
-            )
-
-            // Second Pane
-            Box(
-                modifier = Modifier
-                    .weight(weights[1].coerceAtLeast(0.05f))
-                    .fillMaxHeight()
-            ) {
-                secondPane()
             }
-
-            // Optional Third Pane & Divider 2
-            if (thirdPane != null && paneCount == 3) {
-                ArcPanelDivider(
-                    onDelta = { deltaPx ->
-                        val deltaRatio = deltaPx / totalWidthPx
-                        val newW1 = (weights[1] + deltaRatio).coerceIn(minWeights[1], 0.6f)
-                        val diff = newW1 - weights[1]
-                        val newW2 = (weights[2] - diff).coerceAtLeast(minWeights.getOrElse(2) { 0.18f })
-                        weights = listOf(weights[0], newW1, newW2)
-                    },
-                    onDoubleTapReset = {
-                        weights = listOf(0.30f, 0.40f, 0.30f)
+        } else {
+            Column(Modifier.fillMaxSize()) {
+                panes.forEachIndexed { index, pane ->
+                    Box(Modifier.weight(weights[index]).fillMaxWidth()) { pane() }
+                    if (index < paneCount - 1) {
+                        ArcPanelDivider(
+                            horizontal = false,
+                            value = weights[index],
+                            valueRange = minimums[index]..maximums[index],
+                            canCollapse = index + 1 in collapsiblePanes,
+                            onDelta = { resizeDivider(index, it / paneAreaPx) },
+                            onAdjust = { resizeDivider(index, it) },
+                            onReset = ::reset,
+                            onToggleCollapse = { toggleCollapse(index) }
+                        )
                     }
-                )
-
-                Box(
-                    modifier = Modifier
-                        .weight(weights[2].coerceAtLeast(0.05f))
-                        .fillMaxHeight()
-                ) {
-                    thirdPane()
                 }
             }
         }
@@ -136,28 +160,63 @@ fun ArcResizablePanels(
 
 @Composable
 private fun ArcPanelDivider(
+    horizontal: Boolean,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    canCollapse: Boolean,
     onDelta: (Float) -> Unit,
-    onDoubleTapReset: () -> Unit,
-    modifier: Modifier = Modifier
+    onAdjust: (Float) -> Unit,
+    onReset: () -> Unit,
+    onToggleCollapse: () -> Unit
 ) {
     var isDragging by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
     val colors = ArcTheme.colors
+    val dividerModifier = if (horizontal) Modifier.width(14.dp).fillMaxHeight() else Modifier.height(14.dp).fillMaxWidth()
 
     Box(
-        modifier = modifier
-            .width(14.dp)
-            .fillMaxHeight()
-            .pointerInput(Unit) {
+        modifier = dividerModifier
+            .semantics {
+                contentDescription = "Panel boyutlandırma"
+                stateDescription = "Bölme boyutu"
+                progressBarRangeInfo = ProgressBarRangeInfo(value, valueRange, steps = 0)
+                setProgress { requested ->
+                    if (!requested.isFinite()) false else {
+                        onAdjust(requested - value)
+                        true
+                    }
+                }
+            }
+            .focusRequester(focusRequester)
+            .focusable()
+            .onKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+                when (event.key) {
+                    if (horizontal) Key.DirectionLeft else Key.DirectionUp -> { onAdjust(-0.02f); true }
+                    if (horizontal) Key.DirectionRight else Key.DirectionDown -> { onAdjust(0.02f); true }
+                    Key.MoveHome -> { onReset(); true }
+                    Key.Spacebar, Key.Enter -> if (canCollapse) { onToggleCollapse(); true } else false
+                    else -> false
+                }
+            }
+            .pointerInput(horizontal) {
                 detectTapGestures(
-                    onDoubleTap = { onDoubleTapReset() }
+                    onTap = { focusRequester.requestFocus() },
+                    onDoubleTap = {
+                        focusRequester.requestFocus()
+                        onReset()
+                    }
                 )
             }
-            .pointerInput(Unit) {
+            .pointerInput(horizontal) {
                 detectDragGestures(
-                    onDragStart = { isDragging = true },
+                    onDragStart = {
+                        focusRequester.requestFocus()
+                        isDragging = true
+                    },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        onDelta(dragAmount.x)
+                        onDelta(if (horizontal) dragAmount.x else dragAmount.y)
                     },
                     onDragEnd = { isDragging = false },
                     onDragCancel = { isDragging = false }
@@ -165,22 +224,23 @@ private fun ArcPanelDivider(
             },
         contentAlignment = Alignment.Center
     ) {
-        // Vertical hair line
         Box(
-            modifier = Modifier
-                .width(1.5.dp)
-                .fillMaxHeight()
-                .background(if (isDragging) colors.accent else colors.border)
+            modifier = (if (horizontal) Modifier.width(1.5.dp).fillMaxHeight()
+            else Modifier.height(1.5.dp).fillMaxWidth()).background(if (isDragging) colors.accent else colors.border)
         )
-
-        // Center pill handle
-        Surface(
-            modifier = Modifier
-                .size(width = 6.dp, height = 36.dp)
-                .shadow(if (isDragging) 4.dp else 1.dp, CircleShape),
-            shape = CircleShape,
-            color = if (isDragging) colors.accent else colors.surfaceRaised,
-            border = androidx.compose.foundation.BorderStroke(1.dp, colors.borderStrong)
-        ) {}
+        Box(
+            modifier = if (horizontal) Modifier.width(14.dp).fillMaxHeight()
+            else Modifier.height(14.dp).fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                modifier = Modifier
+                    .then(if (horizontal) Modifier.size(width = 6.dp, height = 36.dp) else Modifier.size(width = 36.dp, height = 6.dp))
+                    .shadow(if (isDragging) 4.dp else 1.dp, CircleShape),
+                shape = CircleShape,
+                color = if (isDragging) colors.accent else colors.surfaceRaised,
+                border = BorderStroke(1.dp, colors.borderStrong)
+            ) {}
+        }
     }
 }

@@ -2,9 +2,11 @@ package com.knigdelioglu.arc.compose
 
 import com.knigdelioglu.arc.compose.foundation.ArcDarkColors
 import com.knigdelioglu.arc.compose.foundation.ArcLightColors
+import com.knigdelioglu.arc.compose.foundation.ArcAccent
 import com.knigdelioglu.arc.compose.foundation.ArcMotionTokens
 import com.knigdelioglu.arc.compose.foundation.ArcShapes
 import com.knigdelioglu.arc.compose.foundation.ArcSpacing
+import com.knigdelioglu.arc.compose.foundation.withAccent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -49,5 +51,18 @@ class ArcTokensTest {
     fun spacingMeetsMinimumTouchTarget() {
         val spacing = ArcSpacing()
         assertTrue(spacing.minTouchTarget.value >= 48f)
+    }
+
+    @Test
+    fun everyArcAccentResolvesInBothThemesAndKeepsChartPalette() {
+        ArcAccent.entries.forEach { accent ->
+            val light = ArcLightColors.withAccent(accent)
+            val dark = ArcDarkColors.withAccent(accent)
+            assertEquals(accent, light.accentVariant)
+            assertEquals(accent, dark.accentVariant)
+            assertNotEquals(light.accent, dark.accent)
+            assertEquals(4, light.dataVisualizationPalette.distinct().size)
+            assertEquals(4, dark.dataVisualizationPalette.distinct().size)
+        }
     }
 }
