@@ -61,7 +61,7 @@ fun ArcRichTextEditor(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = "Notunuzu yazın…",
+    placeholder: String = "Metin yazın…",
     characterCountLabel: (Int) -> String = { "$it karakter" }
 ) {
     val colors = ArcTheme.colors

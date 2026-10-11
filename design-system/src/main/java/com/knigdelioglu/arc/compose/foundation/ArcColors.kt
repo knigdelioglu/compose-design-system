@@ -4,6 +4,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
+/** Arc's supported semantic accent palettes. */
+enum class ArcAccent { Neutral, Violet, Blue, Green, Amber, Orange, Coral, Rose }
+
 /**
  * Arc Library color tokens adapted for Jetpack Compose.
  * Preserves the light and dark neutral ramps and brand gradient definitions.
@@ -35,7 +38,8 @@ data class ArcColors(
     val info: Color,
     val gradientFrom: Color,
     val gradientTo: Color,
-    val gradientForeground: Color
+    val gradientForeground: Color,
+    val accentVariant: ArcAccent = ArcAccent.Neutral
 ) {
     val brandGradient: Brush
         get() = Brush.linearGradient(listOf(gradientFrom, gradientTo))
@@ -55,6 +59,81 @@ data class ArcColors(
                 if (isDark) Color(0xFFFB923C) else Color(0xFFC2410C)
             )
         )
+
+    /** Color-blind-aware series colors shared by all chart composables. */
+    val dataVisualizationPalette: List<Color>
+        get() = if (isDark) {
+            listOf(Color(0xFF55ADFF), Color(0xFF9C37BE), Color(0xFFE66E00), Color(0xFF00A861))
+        } else {
+            listOf(Color(0xFF1F7DCF), Color(0xFF7128A5), Color(0xFFE58F00), Color(0xFF009E84))
+        }
+}
+
+fun ArcColors.withAccent(accent: ArcAccent): ArcColors = when (accent) {
+    ArcAccent.Neutral -> copy(accentVariant = accent)
+    ArcAccent.Violet -> copy(
+        accent = if (isDark) Color(0xFFA78BFF) else Color(0xFF7747FF),
+        accentStrong = if (isDark) Color(0xFFC7B7FF) else Color(0xFF5528CE),
+        accentSubtle = if (isDark) Color(0x387747FF) else Color(0x217747FF),
+        accentForeground = if (isDark) Color(0xFF18181B) else Color.White,
+        controlOn = if (isDark) Color(0xFF8A66FF) else Color(0xFF7747FF),
+        controlGlyph = Color.White,
+        accentVariant = accent
+    )
+    ArcAccent.Blue -> copy(
+        accent = if (isDark) Color(0xFF6BA3FF) else Color(0xFF0562EF),
+        accentStrong = if (isDark) Color(0xFFA4C7FF) else Color(0xFF074DB7),
+        accentSubtle = if (isDark) Color(0x380562EF) else Color(0x1F0562EF),
+        accentForeground = if (isDark) Color(0xFF18181B) else Color.White,
+        controlOn = if (isDark) Color(0xFF3B82F6) else Color(0xFF0562EF),
+        controlGlyph = Color.White,
+        accentVariant = accent
+    )
+    ArcAccent.Green -> copy(
+        accent = if (isDark) Color(0xFF53DCA6) else Color(0xFF0DB879),
+        accentStrong = if (isDark) Color(0xFF93EFD0) else Color(0xFF087C54),
+        accentSubtle = if (isDark) Color(0x330DB879) else Color(0x210DB879),
+        accentForeground = if (isDark) Color(0xFF18181B) else Color(0xFF102016),
+        controlOn = if (isDark) Color(0xFF1FAE78) else Color(0xFF10A870),
+        controlGlyph = Color.White,
+        accentVariant = accent
+    )
+    ArcAccent.Amber -> copy(
+        accent = if (isDark) Color(0xFFFFCB62) else Color(0xFFF3AD20),
+        accentStrong = if (isDark) Color(0xFFFFE0A1) else Color(0xFF9C6300),
+        accentSubtle = if (isDark) Color(0x33F3AD20) else Color(0x29F3AD20),
+        accentForeground = Color(0xFF20190D),
+        controlOn = if (isDark) Color(0xFFE8A52A) else Color(0xFFEDA11A),
+        controlGlyph = Color(0xFF2A1C03),
+        accentVariant = accent
+    )
+    ArcAccent.Orange -> copy(
+        accent = if (isDark) Color(0xFFFFAD5E) else Color(0xFFF48120),
+        accentStrong = if (isDark) Color(0xFFFFD0A0) else Color(0xFFAA4700),
+        accentSubtle = if (isDark) Color(0x33F48120) else Color(0x21F48120),
+        accentForeground = Color(0xFF17130F),
+        controlOn = if (isDark) Color(0xFFEF873A) else Color(0xFFF07818),
+        controlGlyph = Color.White,
+        accentVariant = accent
+    )
+    ArcAccent.Coral -> copy(
+        accent = if (isDark) Color(0xFFFF9386) else Color(0xFFF15F55),
+        accentStrong = if (isDark) Color(0xFFFFC1BA) else Color(0xFFB92C27),
+        accentSubtle = if (isDark) Color(0x33F15F55) else Color(0x24F15F55),
+        accentForeground = if (isDark) Color(0xFF18181B) else Color(0xFF21110F),
+        controlOn = if (isDark) Color(0xFFEC6A60) else Color(0xFFEC564B),
+        controlGlyph = Color.White,
+        accentVariant = accent
+    )
+    ArcAccent.Rose -> copy(
+        accent = if (isDark) Color(0xFFFF8BC5) else Color(0xFFED4E9D),
+        accentStrong = if (isDark) Color(0xFFFFC0DF) else Color(0xFFAE2570),
+        accentSubtle = if (isDark) Color(0x33ED4E9D) else Color(0x24ED4E9D),
+        accentForeground = if (isDark) Color(0xFF18181B) else Color(0xFF250F1B),
+        controlOn = if (isDark) Color(0xFFE457A0) else Color(0xFFE64494),
+        controlGlyph = Color.White,
+        accentVariant = accent
+    )
 }
 
 val ArcLightColors = ArcColors(

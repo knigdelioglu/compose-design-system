@@ -2,6 +2,8 @@ package com.knigdelioglu.arc.compose.navigation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -26,6 +28,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -47,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,9 +59,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -69,12 +86,14 @@ import com.knigdelioglu.arc.compose.controls.ArcButtonSize
 import com.knigdelioglu.arc.compose.controls.ArcButtonVariant
 import com.knigdelioglu.arc.compose.controls.ArcSearchField
 import com.knigdelioglu.arc.compose.foundation.ArcTheme
+import com.knigdelioglu.arc.compose.foundation.ArcMotion
 import kotlin.math.roundToInt
+import kotlin.math.abs
+import kotlinx.coroutines.launch
 
 /**
  * Arc Page Header:
- * Clean, informative workspace top bar for tablets carrying Classroom context,
- * Rubric title, status badges, and top-level action controls.
+ * Clean, informative workspace top bar for a title, status badges, and top-level actions.
  */
 @Composable
 fun ArcPageHeader(
@@ -128,7 +147,7 @@ fun ArcPageHeader(
 }
 
 /**
- * Arc Breadcrumb: hierarchy navigation (Sınıflar > 11-A > Tiyatro Canlandırma).
+ * Arc Breadcrumb: hierarchy navigation for caller-defined routes and locations.
  */
 @Composable
 fun ArcBreadcrumb(
@@ -226,7 +245,7 @@ fun ArcTabs(
 }
 
 /**
- * Arc Drawer: tablet slide-out panel for details, filters, and student editor.
+ * Arc Drawer: slide-out panel for details, filters, and caller-provided editing content.
  */
 @Composable
 fun ArcDrawer(
@@ -296,8 +315,7 @@ fun ArcBottomSheet(
 
 /**
  * Arc Command Palette:
- * Keyboard shortcut accessible modal (Cmd/Ctrl+K) allowing quick search and jump across
- * students, classes, rubrics, and application actions.
+ * Keyboard shortcut accessible modal (Cmd/Ctrl+K) for searching application actions.
  */
 data class ArcCommandAction(
     val id: String,
@@ -313,7 +331,42 @@ fun ArcCommandPalette(
     onClose: () -> Unit,
     actions: List<ArcCommandAction>,
     modifier: Modifier = Modifier
+) = ArcCommandPaletteImpl(isOpen, onClose, actions, modifier, focusRestoreRequester = null)
+
+/**
+ * Command palette overload for hosts that need deterministic focus restoration after dismissal.
+ * Attach [focusRestoreRequester] to the control that opened the palette.
+ */
+@Composable
+fun ArcCommandPalette(
+    isOpen: Boolean,
+    onClose: () -> Unit,
+    actions: List<ArcCommandAction>,
+    focusRestoreRequester: FocusRequester,
+    modifier: Modifier = Modifier
+) = ArcCommandPaletteImpl(isOpen, onClose, actions, modifier, focusRestoreRequester)
+
+@Composable
+private fun ArcCommandPaletteImpl(
+    isOpen: Boolean,
+    onClose: () -> Unit,
+    actions: List<ArcCommandAction>,
+    modifier: Modifier,
+    focusRestoreRequester: FocusRequester?
 ) {
+    var shouldRestoreFocus by remember { mutableStateOf(false) }
+    val closePalette = {
+        shouldRestoreFocus = true
+        onClose()
+    }
+    androidx.compose.runtime.LaunchedEffect(isOpen, shouldRestoreFocus) {
+        if (!isOpen && shouldRestoreFocus) {
+            androidx.compose.runtime.withFrameNanos { }
+            focusRestoreRequester?.requestFocus()
+            shouldRestoreFocus = false
+        }
+    }
+
     if (isOpen) {
         var query by remember { mutableStateOf("") }
         val filtered = remember(query, actions) {
@@ -321,38 +374,111 @@ fun ArcCommandPalette(
                 it.title.contains(query, ignoreCase = true) || it.category.contains(query, ignoreCase = true)
             }
         }
+        // Actions can be assembled inline by callers and recreated on every recomposition.
+        // Stable display keys keep arrow navigation from jumping back to the first result.
+        val activeKeys = filtered.map { Triple(it.id, it.title, it.category) }
+        var activeIndex by remember(query, activeKeys) { mutableIntStateOf(0) }
+        val searchFocusRequester = remember { FocusRequester() }
+        val listState = rememberLazyListState()
+        val motion = com.knigdelioglu.arc.compose.foundation.ArcMotion.current
 
-        Dialog(onDismissRequest = onClose) {
+        androidx.compose.runtime.LaunchedEffect(activeIndex, filtered.size) {
+            if (filtered.isNotEmpty()) {
+                val index = activeIndex.coerceIn(filtered.indices)
+                if (motion.reducedMotion) listState.scrollToItem(index) else listState.animateScrollToItem(index)
+            }
+        }
+        val searchInputModifier = Modifier
+            .focusRequester(searchFocusRequester)
+            .onPreviewKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.DirectionDown -> {
+                        if (filtered.isNotEmpty()) activeIndex = (activeIndex + 1).coerceAtMost(filtered.lastIndex)
+                        true
+                    }
+                    Key.DirectionUp -> {
+                        if (filtered.isNotEmpty()) activeIndex = (activeIndex - 1).coerceAtLeast(0)
+                        true
+                    }
+                    Key.Enter, Key.NumPadEnter -> {
+                        filtered.getOrNull(activeIndex)?.let { action ->
+                            action.onExecute()
+                            closePalette()
+                        }
+                        true
+                    }
+                    Key.Escape -> { closePalette(); true }
+                    else -> false
+                }
+            }
+
+        Dialog(onDismissRequest = closePalette) {
             Surface(
                 modifier = modifier
                     .fillMaxWidth(0.9f)
-                    .heightIn(max = 520.dp),
+                    .heightIn(max = 520.dp)
+                    .onPreviewKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                        when (event.key) {
+                            Key.DirectionDown -> {
+                                if (filtered.isNotEmpty()) activeIndex = (activeIndex + 1).coerceAtMost(filtered.lastIndex)
+                                true
+                            }
+                            Key.DirectionUp -> {
+                                if (filtered.isNotEmpty()) activeIndex = (activeIndex - 1).coerceAtLeast(0)
+                                true
+                            }
+                            Key.Enter, Key.NumPadEnter -> {
+                                filtered.getOrNull(activeIndex)?.let { action ->
+                                    action.onExecute()
+                                    closePalette()
+                                }
+                                true
+                            }
+                            Key.Escape -> { closePalette(); true }
+                            else -> false
+                        }
+                    },
                 shape = ArcTheme.shapes.panel,
                 color = ArcTheme.colors.surfaceRaised,
                 border = BorderStroke(1.dp, ArcTheme.colors.border),
                 shadowElevation = 12.dp
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
+                    androidx.compose.runtime.LaunchedEffect(searchFocusRequester) {
+                        searchFocusRequester.requestFocus()
+                    }
                     ArcSearchField(
                         query = query,
                         onQueryChange = { query = it },
-                        placeholder = "Komut veya öğrenci ara... (Örn: 11-A, Sözlü Sunum, Yedek Al)"
+                        inputModifier = searchInputModifier,
+                        placeholder = "Komut ara..."
                     )
                     Spacer(Modifier.height(14.dp))
                     androidx.compose.foundation.lazy.LazyColumn(
+                        state = listState,
                         modifier = Modifier.weight(1f, fill = false),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(filtered.size) { index ->
                             val action = filtered[index]
+                            val isActive = index == activeIndex
+                            val rowColor by animateColorAsState(
+                                targetValue = if (isActive) ArcTheme.colors.accentSubtle else Color.Transparent,
+                                animationSpec = motion.fastTween(),
+                                label = "arcCommandActive"
+                            )
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(ArcTheme.shapes.control)
+                                    .background(rowColor)
                                     .clickable {
                                         action.onExecute()
-                                        onClose()
+                                        closePalette()
                                     }
+                                    .semantics { selected = isActive }
                                     .padding(horizontal = 14.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
@@ -385,6 +511,15 @@ fun ArcCommandPalette(
                                         )
                                     }
                                 }
+                            }
+                        }
+                        if (filtered.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "Sonuç bulunamadı",
+                                    color = ArcTheme.colors.textMuted,
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                                )
                             }
                         }
                     }
@@ -561,7 +696,7 @@ fun <T> ArcCarousel(
 }
 
 /**
- * Arc Card Stack: stacked card interaction for student-by-student inspection or evaluation.
+ * Arc Card Stack: stacked-card interaction for focused, one-at-a-time review.
  */
 @Composable
 fun <T> ArcCardStack(
@@ -571,28 +706,64 @@ fun <T> ArcCardStack(
     cardContent: @Composable (T) -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
+    val scope = rememberCoroutineScope()
+    val visibleItems = items.take(3)
+    val motion = ArcMotion.current
 
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        items.take(3).reversed().forEachIndexed { reverseIndex, item ->
-            val stackIndex = 2 - reverseIndex
+        visibleItems.indices.reversed().forEach { stackIndex ->
+            val item = visibleItems[stackIndex]
+            val isTopCard = stackIndex == 0
+            var dismissing by remember(item) { mutableStateOf(false) }
             val scale = 1f - (stackIndex * 0.04f)
             val offsetY = (stackIndex * 10).dp
 
             Box(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .offset(y = offsetY)
                     .scale(scale)
                     .then(
-                        if (stackIndex == 0) {
+                        if (isTopCard) {
                             Modifier
                                 .offset { IntOffset(offsetX.roundToInt(), 0) }
+                                .semantics {
+                                    contentDescription = "Üst kart: $item"
+                                    if (onDismissTop != null) {
+                                        customActions = listOf(
+                                            CustomAccessibilityAction("Kartı kaldır") {
+                                                if (!dismissing) onDismissTop(item)
+                                                true
+                                            }
+                                        )
+                                    }
+                                }
                                 .pointerInput(Unit) {
                                     detectHorizontalDragGestures(
                                         onDragEnd = {
-                                            if (kotlin.math.abs(offsetX) > 300f) {
-                                                onDismissTop?.invoke(item)
+                                            val threshold = maxOf(size.width * 0.35f, 80f)
+                                            if (onDismissTop != null && !dismissing && abs(offsetX) >= threshold) {
+                                                dismissing = true
+                                                val target = (if (offsetX < 0f) -1f else 1f) * (size.width + abs(offsetX))
+                                                scope.launch {
+                                                    animate(
+                                                        initialValue = offsetX,
+                                                        targetValue = target,
+                                                    animationSpec = motion.springResponsive()
+                                                    ) { value, _ -> offsetX = value }
+                                                    onDismissTop(item)
+                                                    offsetX = 0f
+                                                    dismissing = false
+                                                }
+                                            } else {
+                                                scope.launch {
+                                                    animate(
+                                                        initialValue = offsetX,
+                                                        targetValue = 0f,
+                                                    animationSpec = motion.springResponsive()
+                                                    ) { value, _ -> offsetX = value }
+                                                }
                                             }
-                                            offsetX = 0f
                                         },
                                         onDragCancel = { offsetX = 0f },
                                         onHorizontalDrag = { change, dragAmount ->

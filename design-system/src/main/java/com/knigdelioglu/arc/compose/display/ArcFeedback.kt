@@ -300,7 +300,7 @@ fun ArcTooltip(
 }
 
 /**
- * Arc Swipe Actions: revealable swipe action buttons on student row.
+ * Arc Swipe Actions: revealable swipe action buttons on a list row.
  */
 @Composable
 fun ArcSwipeActions(
@@ -543,7 +543,7 @@ fun ArcFaqSection(
 }
 
 /**
- * Arc JSON Viewer: diagnostic viewer for verified rubric JSON sources.
+ * Arc JSON Viewer: diagnostic viewer for structured JSON data.
  */
 @Composable
 fun ArcJsonViewer(

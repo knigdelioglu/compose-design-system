@@ -6,6 +6,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,58 +33,135 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.knigdelioglu.arc.compose.foundation.ArcTheme
 import com.knigdelioglu.arc.compose.foundation.ArcMotion
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 
 /**
- * Arc Hold to Confirm: long-press button with filling progress ring to protect critical irreversible actions (e.g., delete classroom, restore backup).
+ * Arc Hold to Confirm: long-press button with a filling progress ring for critical user-confirmed actions.
  */
 @Composable
 fun ArcHoldToConfirm(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Silmek için basılı tutun",
+    label: String = "Onaylamak için basılı tutun",
     confirmedLabel: String = "Tamamlandı",
     holdDurationMillis: Int = 1400,
     variant: ArcButtonVariant = ArcButtonVariant.Danger
 ) {
     val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
     var isConfirmed by remember { mutableStateOf(false) }
+    var isHolding by remember { mutableStateOf(false) }
+    var holdJob by remember { mutableStateOf<Job?>(null) }
+    val motion = ArcMotion.current
     val colors = ArcTheme.colors
+
+    fun cancelHold() {
+        isHolding = false
+        holdJob?.cancel()
+        holdJob = null
+        scope.launch {
+            if (motion.reducedMotion) progress.snapTo(0f)
+            else progress.animateTo(0f, animationSpec = tween(motion.durationExit, easing = motion.easeExit))
+        }
+    }
+
+    fun startHold() {
+        if (isConfirmed) return
+        if (isHolding) {
+            cancelHold()
+            return
+        }
+        isHolding = true
+        holdJob = scope.launch {
+            val duration = holdDurationMillis.coerceAtLeast(1)
+            if (motion.reducedMotion) {
+                delay(duration.toLong())
+                progress.snapTo(1f)
+            } else {
+                progress.animateTo(1f, animationSpec = tween(duration, easing = LinearEasing))
+            }
+            if (isHolding && !isConfirmed) {
+                // Set the guard before invoking app code so re-entrant updates cannot confirm twice.
+                isConfirmed = true
+                isHolding = false
+                onConfirm()
+            }
+        }
+    }
 
     val buttonColor = if (isConfirmed) colors.success else if (variant == ArcButtonVariant.Danger) colors.danger else colors.accent
 
     Surface(
         modifier = modifier
             .height(48.dp)
-            .pointerInput(isConfirmed) {
-                if (isConfirmed) return@pointerInput
+            .pointerInput(isConfirmed, holdDurationMillis) {
                 detectTapGestures(
                     onPress = {
-                        val animJob = scope.launch {
-                            progress.animateTo(1f, animationSpec = tween(holdDurationMillis, easing = LinearEasing))
-                            isConfirmed = true
-                            onConfirm()
-                        }
+                        focusRequester.requestFocus()
+                        startHold()
                         try {
                             awaitRelease()
                         } finally {
-                            if (!isConfirmed) {
-                                animJob.cancel()
-                                scope.launch {
-                                    progress.animateTo(0f, animationSpec = tween(200))
-                                }
-                            }
+                            if (isHolding && !isConfirmed) cancelHold()
                         }
                     }
                 )
+            }
+            .focusRequester(focusRequester)
+            .focusable(enabled = !isConfirmed)
+            .onKeyEvent { event ->
+                if (isConfirmed) return@onKeyEvent false
+                when {
+                    event.key == Key.Enter || event.key == Key.Spacebar -> {
+                        when (event.type) {
+                            KeyEventType.KeyDown -> if (event.nativeKeyEvent.repeatCount == 0) startHold()
+                            KeyEventType.KeyUp -> if (isHolding) cancelHold()
+                        }
+                        true
+                    }
+                    event.key == Key.Escape && event.type == KeyEventType.KeyDown -> {
+                        if (isHolding) cancelHold()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            .semantics {
+                role = Role.Button
+                contentDescription = if (isConfirmed) confirmedLabel else label
+                stateDescription = when {
+                    isConfirmed -> "Onaylandı"
+                    isHolding -> "Basılı tutma sürüyor"
+                    else -> "Onaylamak için basılı tutun"
+                }
+                onClick(label = if (isHolding) "Onaylamayı iptal et" else "Basılı tutarak onayla") {
+                    focusRequester.requestFocus()
+                    startHold()
+                    true
+                }
             },
         shape = ArcTheme.shapes.control,
         color = buttonColor.copy(alpha = 0.12f),
@@ -112,7 +190,11 @@ fun ArcHoldToConfirm(
                 }
 
                 Text(
-                    text = if (isConfirmed) confirmedLabel else label,
+                    text = when {
+                        isConfirmed -> confirmedLabel
+                        isHolding -> "Basılı tutun…"
+                        else -> label
+                    },
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = buttonColor

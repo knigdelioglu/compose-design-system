@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "ComposeDesignSystem"
 include(":design-system")
+include(":gallery")
