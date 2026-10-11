@@ -43,3 +43,22 @@ internal fun <T> reorderArcStack(items: List<T>, key: (T) -> String, direction: 
     if (items.size < 2 || direction == 0) return items
     return if (direction < 0) items.drop(1) + items.first() else moveArcItemToFront(items, key, key(items.last()))
 }
+
+/** Finds the next enabled item without wrapping, starting just beyond [currentIndex]. */
+internal fun <T> nextEnabledArcIndex(
+    items: List<T>,
+    currentIndex: Int,
+    direction: Int,
+    isEnabled: (T) -> Boolean
+): Int {
+    if (direction == 0 || items.isEmpty()) return -1
+    return if (direction > 0) {
+        val start = (currentIndex + 1).coerceAtLeast(0)
+        if (start > items.lastIndex) -1
+        else (start..items.lastIndex).firstOrNull { isEnabled(items[it]) } ?: -1
+    } else {
+        val start = (currentIndex - 1).coerceAtMost(items.lastIndex)
+        if (start < 0) -1
+        else (start downTo 0).firstOrNull { isEnabled(items[it]) } ?: -1
+    }
+}

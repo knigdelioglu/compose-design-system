@@ -2,6 +2,7 @@ package com.knigdelioglu.arc.compose.advanced
 
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -36,6 +37,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -79,21 +81,23 @@ fun ArcCoverFlow(
     }
 
     fun requestIndex(index: Int) {
-        val item = items.getOrNull(index) ?: return
+        val item = items.getOrNull(index)?.takeIf { it.enabled } ?: return
         onSelectedKeyChange(item.key)
     }
 
     val actions = buildList {
         if (items.isNotEmpty()) {
             add(CustomAccessibilityAction("Previous item") {
-                val target = (if (selectedIndex >= 0) selectedIndex else centerIndex) - 1
+                val current = selectedIndex.takeIf { it >= 0 } ?: centerIndex
+                val target = nextEnabledArcIndex(items, current, -1) { it.enabled }
                 if (target >= 0) requestIndex(target)
                 target >= 0
             })
             add(CustomAccessibilityAction("Next item") {
-                val target = (if (selectedIndex >= 0) selectedIndex else centerIndex) + 1
-                if (target < items.size) requestIndex(target)
-                target < items.size
+                val current = selectedIndex.takeIf { it >= 0 } ?: centerIndex
+                val target = nextEnabledArcIndex(items, current, 1) { it.enabled }
+                if (target >= 0) requestIndex(target)
+                target >= 0
             })
         }
     }
@@ -121,7 +125,7 @@ fun ArcCoverFlow(
             .filter { it >= 0 }
             .distinctUntilChanged()
             .collect { index ->
-                items.getOrNull(index)?.let { item ->
+                items.getOrNull(index)?.takeIf { it.enabled }?.let { item ->
                     if (item.key != selectedKey) onSelectedKeyChange(item.key)
                 }
             }
@@ -131,15 +135,20 @@ fun ArcCoverFlow(
         modifier = modifier
             .fillMaxWidth()
             .focusGroup()
+            .focusable()
             .onPreviewKeyEvent { event ->
                 when (event.key) {
                     Key.DirectionLeft -> {
-                        requestIndex(((if (selectedIndex >= 0) selectedIndex else centerIndex) - 1).coerceAtLeast(0))
-                        items.isNotEmpty()
+                        val current = selectedIndex.takeIf { it >= 0 } ?: centerIndex
+                        val target = nextEnabledArcIndex(items, current, -1) { it.enabled }
+                        if (target >= 0) requestIndex(target)
+                        target >= 0
                     }
                     Key.DirectionRight -> {
-                        requestIndex(((if (selectedIndex >= 0) selectedIndex else centerIndex) + 1).coerceAtMost(items.lastIndex))
-                        items.isNotEmpty()
+                        val current = selectedIndex.takeIf { it >= 0 } ?: centerIndex
+                        val target = nextEnabledArcIndex(items, current, 1) { it.enabled }
+                        if (target >= 0) requestIndex(target)
+                        target >= 0
                     }
                     else -> false
                 }
@@ -190,6 +199,7 @@ fun ArcCoverFlow(
                             .semantics(mergeDescendants = true) {
                                 contentDescription = item.contentDescription
                                 this.selected = selected
+                                if (!item.enabled) disabled()
                             }
                     ) {
                         Surface(

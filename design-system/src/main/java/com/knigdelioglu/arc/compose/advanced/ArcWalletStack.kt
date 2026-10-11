@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +41,7 @@ import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -76,6 +78,8 @@ fun ArcWalletStack(
     val colors = ArcTheme.colors
     val motion = ArcTheme.motion
     val selectedIndex = cards.indexOfFirst { it.key == selectedKey }
+    val previousEnabledIndex = nextEnabledArcIndex(cards, selectedIndex, -1) { it.enabled }
+    val nextEnabledIndex = nextEnabledArcIndex(cards, selectedIndex, 1) { it.enabled }
     val displayCards = remember(cards, selectedKey) {
         if (selectedKey == null) cards else moveArcItemToFront(cards, ArcWalletCard::key, selectedKey)
     }
@@ -107,14 +111,12 @@ fun ArcWalletStack(
     val actions = buildList {
         if (cards.size > 1) {
             add(CustomAccessibilityAction("Previous card") {
-                val nextIndex = (selectedIndex - 1).coerceAtLeast(0)
-                cards.getOrNull(nextIndex)?.let { onSelectedKeyChange(it.key) }
-                nextIndex != selectedIndex
+                cards.getOrNull(previousEnabledIndex)?.let { onSelectedKeyChange(it.key) }
+                previousEnabledIndex >= 0
             })
             add(CustomAccessibilityAction("Next card") {
-                val nextIndex = (selectedIndex + 1).coerceAtMost(cards.lastIndex)
-                cards.getOrNull(nextIndex)?.let { onSelectedKeyChange(it.key) }
-                nextIndex != selectedIndex
+                cards.getOrNull(nextEnabledIndex)?.let { onSelectedKeyChange(it.key) }
+                nextEnabledIndex >= 0
             })
         }
         if (selectedKey != null && cards.any { it.key == selectedKey }) {
@@ -129,17 +131,16 @@ fun ArcWalletStack(
         modifier = modifier
             .fillMaxWidth()
             .focusGroup()
+            .focusable()
             .onPreviewKeyEvent { event ->
                 when (event.key) {
                     Key.DirectionLeft -> {
-                        val index = (selectedIndex - 1).coerceAtLeast(0)
-                        cards.getOrNull(index)?.let { onSelectedKeyChange(it.key) }
-                        cards.isNotEmpty()
+                        cards.getOrNull(previousEnabledIndex)?.let { onSelectedKeyChange(it.key) }
+                        previousEnabledIndex >= 0
                     }
                     Key.DirectionRight -> {
-                        val index = (selectedIndex + 1).coerceAtMost(cards.lastIndex)
-                        cards.getOrNull(index)?.let { onSelectedKeyChange(it.key) }
-                        cards.isNotEmpty()
+                        cards.getOrNull(nextEnabledIndex)?.let { onSelectedKeyChange(it.key) }
+                        nextEnabledIndex >= 0
                     }
                     else -> false
                 }
@@ -210,7 +211,7 @@ fun ArcWalletStack(
                         Surface(
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
-                                .padding(top = y)
+                                .padding(top = y.coerceAtLeast(0.dp))
                                 .width(maxCardWidth)
                                 .height(height)
                                 .zIndex((visibleCards.size - index).toFloat())
@@ -220,6 +221,7 @@ fun ArcWalletStack(
                                 .semantics(mergeDescendants = true) {
                                     contentDescription = card.contentDescription
                                     this.selected = selected
+                                    if (!card.enabled) disabled()
                                 }
                                 .graphicsLayer {
                                     translationX = if (topCard && isDragging.value) dragX.floatValue else if (topCard) settlingX.value else 0f
@@ -249,8 +251,8 @@ fun ArcWalletStack(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        enabled = selectedIndex > 0,
-                        onClick = { cards.getOrNull((selectedIndex - 1).coerceAtLeast(0))?.let { onSelectedKeyChange(it.key) } }
+                        enabled = previousEnabledIndex >= 0,
+                        onClick = { cards.getOrNull(previousEnabledIndex)?.let { onSelectedKeyChange(it.key) } }
                     ) {
                         Text("‹", modifier = Modifier.semantics { contentDescription = "Previous card" })
                     }
@@ -260,8 +262,8 @@ fun ArcWalletStack(
                         fontWeight = FontWeight.Medium
                     )
                     IconButton(
-                        enabled = selectedIndex < cards.lastIndex,
-                        onClick = { cards.getOrNull((selectedIndex + 1).coerceAtMost(cards.lastIndex))?.let { onSelectedKeyChange(it.key) } }
+                        enabled = nextEnabledIndex >= 0,
+                        onClick = { cards.getOrNull(nextEnabledIndex)?.let { onSelectedKeyChange(it.key) } }
                     ) {
                         Text("›", modifier = Modifier.semantics { contentDescription = "Next card" })
                     }

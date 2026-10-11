@@ -3,6 +3,7 @@ agp = "8.13.2"
 kotlin = "2.2.21"
 binaryCompatibilityValidator = "0.18.2"
 composeBom = "2025.10.01"
+activityCompose = "1.11.0"
 junit = "4.13.2"
 
 [libraries]
@@ -14,6 +15,7 @@ compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-animation = { module = "androidx.compose.animation:animation" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 junit = { module = "junit:junit", version.ref = "junit" }
 
 [plugins]

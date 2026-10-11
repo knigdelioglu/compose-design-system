@@ -35,4 +35,16 @@ class AdvancedComponentMathTest {
         assertEquals(listOf("c", "a", "b"), moveArcItemToFront(cards, { it }, "c"))
         assertEquals(cards, moveArcItemToFront(cards, { it }, "missing"))
     }
+
+    @Test
+    fun keyboardNavigationFindsEnabledItemsWithoutWrapping() {
+        val items = listOf("first", "disabled", "last")
+        val enabled = { item: String -> item != "disabled" }
+
+        assertEquals(2, nextEnabledArcIndex(items, 0, 1, enabled))
+        assertEquals(0, nextEnabledArcIndex(items, 2, -1, enabled))
+        assertEquals(-1, nextEnabledArcIndex(items, 0, -1, enabled))
+        assertEquals(-1, nextEnabledArcIndex(items, 2, 1, enabled))
+        assertEquals(0, nextEnabledArcIndex(items, -1, 1, enabled))
+    }
 }
