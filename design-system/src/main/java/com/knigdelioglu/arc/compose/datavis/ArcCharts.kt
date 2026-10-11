@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
@@ -55,28 +57,31 @@ data class ArcBarData(
 fun ArcBarChart(
     data: List<ArcBarData>,
     modifier: Modifier = Modifier,
-    barHeight: Dp = 140.dp
+    barHeight: Dp = 140.dp,
+    title: String = "Dağılım"
 ) {
-    val maxValue = (data.maxOfOrNull { it.value } ?: 1f).coerceAtLeast(1f)
+    val safeData = data.map { it.copy(value = it.value.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f) }
+    val maxValue = (safeData.maxOfOrNull { it.value } ?: 1f).coerceAtLeast(1f)
     val colors = ArcTheme.colors
 
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Puan Dağılımı", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
             Spacer(Modifier.height(16.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
                     .height(barHeight),
-                horizontalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
-                data.forEach { item ->
+                safeData.forEachIndexed { index, item ->
                     val fraction = (item.value / maxValue).coerceIn(0f, 1f)
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Bottom,
-                        modifier = Modifier.fillMaxHeight()
+                        modifier = Modifier.width(52.dp).fillMaxHeight()
                     ) {
                         Text(item.value.toInt().toString(), fontSize = 11.sp, color = colors.textMuted)
                         Spacer(Modifier.height(4.dp))
@@ -85,7 +90,8 @@ fun ArcBarChart(
                                 .width(28.dp)
                                 .fillMaxHeight(fraction)
                                 .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
-                                .background(item.color ?: colors.accent)
+                                .background(item.color ?: colors.dataVisualizationPalette[index % colors.dataVisualizationPalette.size])
+                                .semantics { contentDescription = "${item.label}: ${item.value}" }
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(item.label, fontSize = 11.sp, color = colors.textSecondary)
@@ -175,6 +181,7 @@ fun ArcGauge(
     modifier: Modifier = Modifier
 ) {
     val colors = ArcTheme.colors
+    val safePercentage = percentage.takeIf(Float::isFinite)?.coerceIn(0f, 1f) ?: 0f
     ArcCard(modifier = modifier) {
         Column(
             modifier = Modifier.padding(18.dp),
@@ -203,7 +210,7 @@ fun ArcGauge(
                     drawArc(
                         color = colors.accent,
                         startAngle = 180f,
-                        sweepAngle = 180f * percentage.coerceIn(0f, 1f),
+                        sweepAngle = 180f * safePercentage,
                         useCenter = false,
                         topLeft = topLeft,
                         size = arcSize,
@@ -211,7 +218,7 @@ fun ArcGauge(
                     )
                 }
                 Text(
-                    text = "${(percentage * 100).toInt()}%",
+                    text = "${(safePercentage * 100).toInt()}%",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = colors.foreground
@@ -230,18 +237,19 @@ fun ArcSparkline(
     modifier: Modifier = Modifier,
     lineColor: Color = ArcTheme.colors.accent
 ) {
-    if (points.size < 2) return
+    val safePoints = points.filter(Float::isFinite)
+    if (safePoints.size < 2) return
 
-    val min = points.minOrNull() ?: 0f
-    val max = (points.maxOrNull() ?: 100f).coerceAtLeast(min + 1f)
+    val min = safePoints.minOrNull() ?: 0f
+    val max = (safePoints.maxOrNull() ?: 1f).coerceAtLeast(min + 1f)
 
     Canvas(modifier = modifier.height(36.dp).width(100.dp)) {
         val width = size.width
         val height = size.height
-        val stepX = width / (points.size - 1)
+        val stepX = width / (safePoints.size - 1)
 
         val path = Path()
-        points.forEachIndexed { i, p ->
+        safePoints.forEachIndexed { i, p ->
             val x = i * stepX
             val y = height - (((p - min) / (max - min)) * height)
             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
@@ -260,11 +268,13 @@ fun ArcUsageMeter(
     label: String,
     modifier: Modifier = Modifier
 ) {
-    val fraction = if (total > 0) (used.toFloat() / total).coerceIn(0f, 1f) else 0f
+    val safeTotal = total.coerceAtLeast(0)
+    val safeUsed = used.coerceIn(0, safeTotal)
+    val fraction = if (safeTotal > 0) (safeUsed.toFloat() / safeTotal).coerceIn(0f, 1f) else 0f
     Column(modifier = modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label, fontSize = 13.sp, color = ArcTheme.colors.textSecondary)
-            Text("$used / $total", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ArcTheme.colors.foreground)
+            Text("$safeUsed / $safeTotal", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = ArcTheme.colors.foreground)
         }
         Spacer(Modifier.height(6.dp))
         Box(
@@ -291,28 +301,43 @@ fun ArcUsageMeter(
 @Composable
 fun ArcLineChart(
     sessionScores: List<Pair<String, Float>>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Eğilim",
+    valueRange: ClosedFloatingPointRange<Float>? = null
 ) {
     val colors = ArcTheme.colors
+    val validScores = sessionScores.filter { it.second.isFinite() }
+    val dataMin = validScores.minOfOrNull { it.second } ?: 0f
+    val dataMax = validScores.maxOfOrNull { it.second } ?: 1f
+    val rangeMin = valueRange?.start?.takeIf { it.isFinite() } ?: dataMin
+    val rangeMax = valueRange?.endInclusive?.takeIf { it.isFinite() && it > rangeMin } ?: maxOf(dataMax, rangeMin + 1f)
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(18.dp)) {
-            Text("Oturum Not Eğilimi", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
             Spacer(Modifier.height(14.dp))
-            if (sessionScores.size < 2) {
-                Text("Eğilim için en az 2 oturum gereklidir.", fontSize = 13.sp, color = colors.textMuted)
+            if (validScores.size < 2) {
+                Text("Eğilim için en az 2 geçerli değer gerekir.", fontSize = 13.sp, color = colors.textMuted)
             } else {
-                Canvas(modifier = Modifier.fillMaxWidth().height(120.dp)) {
-                    val max = (sessionScores.maxOf { it.second }).coerceAtLeast(100f)
-                    val stepX = size.width / (sessionScores.size - 1)
-                    val path = Path()
-
-                    sessionScores.forEachIndexed { i, (_, score) ->
-                        val x = i * stepX
-                        val y = size.height - ((score / max) * size.height)
-                        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                        drawCircle(color = colors.accent, radius = 4.dp.toPx(), center = Offset(x, y))
+                Canvas(
+                    modifier = Modifier.fillMaxWidth().height(120.dp).semantics {
+                        contentDescription = validScores.joinToString(prefix = "$title: ") { "${it.first}, ${it.second}" }
                     }
-                    drawPath(path = path, color = colors.accent, style = Stroke(width = 2.5.dp.toPx()))
+                ) {
+                    val stepX = size.width / (validScores.size - 1)
+                    val path = Path()
+                    for (grid in 0..4) {
+                        val y = size.height * grid / 4f
+                        drawLine(colors.borderSubtle, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
+                    }
+
+                    validScores.forEachIndexed { i, (_, score) ->
+                        val x = i * stepX
+                        val normalized = ((score.coerceIn(rangeMin, rangeMax) - rangeMin) / (rangeMax - rangeMin)).coerceIn(0f, 1f)
+                        val y = size.height - (normalized * size.height)
+                        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                        drawCircle(color = colors.dataVisualizationPalette.first(), radius = 4.dp.toPx(), center = Offset(x, y))
+                    }
+                    drawPath(path = path, color = colors.dataVisualizationPalette.first(), style = Stroke(width = 2.5.dp.toPx()))
                 }
             }
         }
@@ -325,14 +350,16 @@ fun ArcLineChart(
 @Composable
 fun ArcWaffleChart(
     percentage: Int, // 0..100
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "İlerleme"
 ) {
     val colors = ArcTheme.colors
+    val safePercentage = percentage.coerceIn(0, 100)
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Sınıf İlerleme Matrisi", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
-                Text("%$percentage", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.accent)
+                Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
+                Text("$safePercentage%", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.accent)
             }
             Spacer(Modifier.height(12.dp))
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -340,7 +367,7 @@ fun ArcWaffleChart(
                     Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                         for (col in 0 until 10) {
                             val index = row * 10 + col
-                            val filled = index < percentage
+                            val filled = index < safePercentage
                             Box(
                                 modifier = Modifier
                                     .size(14.dp)
@@ -361,20 +388,33 @@ fun ArcWaffleChart(
 @Composable
 fun ArcSlopeChart(
     items: List<Pair<String, Pair<Float, Float>>>, // Name to (InitialScore, FinalScore)
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    valueRange: ClosedFloatingPointRange<Float>? = null
 ) {
     val colors = ArcTheme.colors
+    val finiteValues = items.flatMap { listOf(it.second.first, it.second.second) }.filter(Float::isFinite)
+    val dataMin = finiteValues.minOrNull() ?: 0f
+    val dataMax = finiteValues.maxOrNull() ?: (dataMin + 1f)
+    val rangeMin = valueRange?.start?.takeIf(Float::isFinite) ?: dataMin
+    val rangeMax = valueRange?.endInclusive?.takeIf { it.isFinite() && it > rangeMin } ?: maxOf(dataMax, rangeMin + 1f)
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Gelişim Eğrileri", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
             Spacer(Modifier.height(12.dp))
-            Canvas(modifier = Modifier.fillMaxWidth().height(140.dp)) {
+            Canvas(
+                modifier = Modifier.fillMaxWidth().height(140.dp).semantics {
+                    contentDescription = items.joinToString(prefix = "Karşılaştırma: ") { (label, pair) ->
+                        "$label, ${pair.first} – ${pair.second}"
+                    }
+                }
+            ) {
                 val leftX = 30.dp.toPx()
                 val rightX = size.width - 30.dp.toPx()
 
                 items.forEach { (_, scores) ->
-                    val y1 = size.height - (scores.first / 100f * size.height)
-                    val y2 = size.height - (scores.second / 100f * size.height)
+                    if (!scores.first.isFinite() || !scores.second.isFinite()) return@forEach
+                    val y1 = size.height - (((scores.first.coerceIn(rangeMin, rangeMax) - rangeMin) / (rangeMax - rangeMin)) * size.height)
+                    val y2 = size.height - (((scores.second.coerceIn(rangeMin, rangeMax) - rangeMin) / (rangeMax - rangeMin)) * size.height)
                     drawLine(
                         color = if (y2 <= y1) colors.success else colors.danger,
                         start = Offset(leftX, y1),
@@ -397,12 +437,13 @@ fun ArcSlopeChart(
 fun ArcActivityHeatmap(
     daysIntensity: List<Int>, // 0..4
     dayLabels: List<String> = emptyList(),
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Son 28 Gün"
 ) {
     val colors = ArcTheme.colors
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Son 28 Gün: Ölçüt Puanı Değişiklikleri", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
+            Text(title, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 daysIntensity.take(28).chunked(7).forEachIndexed { weekIndex, week ->
@@ -410,10 +451,10 @@ fun ArcActivityHeatmap(
                         week.forEachIndexed { dayIndex, level ->
                             val flattenedIndex = weekIndex * 7 + dayIndex
                             val color = when (level) {
-                                1 -> colors.accent.copy(alpha = 0.25f)
-                                2 -> colors.accent.copy(alpha = 0.50f)
-                                3 -> colors.accent.copy(alpha = 0.75f)
-                                4 -> colors.accent
+                                1 -> colors.dataVisualizationPalette.first().copy(alpha = 0.25f)
+                                2 -> colors.dataVisualizationPalette.first().copy(alpha = 0.50f)
+                                3 -> colors.dataVisualizationPalette.first().copy(alpha = 0.75f)
+                                in 4..Int.MAX_VALUE -> colors.dataVisualizationPalette.first()
                                 else -> colors.surfaceMuted
                             }
                             Box(
@@ -423,7 +464,7 @@ fun ArcActivityHeatmap(
                                     .background(color)
                                     .semantics {
                                         contentDescription = dayLabels.getOrNull(flattenedIndex)
-                                            ?: "Değerlendirme etkinliği düzeyi $level"
+                                            ?: "Grafik değeri $level"
                                     }
                             )
                         }
@@ -432,7 +473,7 @@ fun ArcActivityHeatmap(
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "Açık renkten koyuya: 1, 2–3, 4–7, 8+ değişiklik/gün",
+                "Açık renkten koyuya: düşükten yüksek etkinliğe",
                 fontSize = 11.sp,
                 color = colors.textSecondary
             )

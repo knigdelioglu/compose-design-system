@@ -16,15 +16,24 @@ class ArcMotionTest {
     }
 
     @Test
-    fun reducedMotionEnabledHasHighStiffnessAndSnapTransitions() {
+    fun reducedMotionSnapsSpringAndTweenTransitions() {
         val motion = ArcMotionTokens(reducedMotion = true)
         assertTrue(motion.reducedMotion)
 
         val responsiveSpec = motion.springResponsive<Float>()
-        assertEquals(androidx.compose.animation.core.Spring.StiffnessHigh, responsiveSpec.stiffness, 0.001f)
+        assertTrue(responsiveSpec is androidx.compose.animation.core.SnapSpec)
 
         val tweenSpec = motion.standardTween<Float>()
         // When reduced motion is active, standardTween returns a SnapSpec
         assertTrue(tweenSpec is androidx.compose.animation.core.SnapSpec)
+        assertEquals(0, motion.staggerDelay(5))
+    }
+
+    @Test
+    fun regularMotionExposesArcSpringAndStaggerTokens() {
+        val motion = ArcMotionTokens()
+        assertEquals(580, motion.durationSpring)
+        assertEquals(160, motion.staggerDelay(4))
+        assertTrue(motion.springResponsive<Float>() !is androidx.compose.animation.core.SnapSpec)
     }
 }

@@ -40,8 +40,16 @@ fun ArcTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     reducedMotion: Boolean? = null,
     content: @Composable () -> Unit
+) = ArcTheme(darkTheme, reducedMotion, ArcAccent.Neutral, content)
+
+@Composable
+fun ArcTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    reducedMotion: Boolean? = null,
+    accent: ArcAccent,
+    content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) ArcDarkColors else ArcLightColors
+    val colors = (if (darkTheme) ArcDarkColors else ArcLightColors).withAccent(accent)
     val systemReducedMotion = rememberSystemReducedMotion()
     val motion = ArcMotionTokens(reducedMotion = reducedMotion ?: systemReducedMotion)
     val shapes = ArcShapes()

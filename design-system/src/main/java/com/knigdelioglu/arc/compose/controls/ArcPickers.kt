@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,19 +21,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberDateRangePickerState
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,7 +57,7 @@ import androidx.compose.ui.unit.sp
 import com.knigdelioglu.arc.compose.foundation.ArcTheme
 
 /**
- * Arc Calendar: clean monthly grid calendar for selecting assessment session dates.
+ * Arc Calendar: clean monthly grid calendar for selecting dates.
  */
 @Composable
 fun ArcCalendar(
@@ -64,7 +70,7 @@ fun ArcCalendar(
     onSelectDate: (String) -> Unit = {}
 ) {
     val colors = ArcTheme.colors
-    val monthFormat = remember { DateTimeFormatter.ofPattern("LLLL yyyy", Locale("tr", "TR")) }
+    val monthFormat = remember { DateTimeFormatter.ofPattern("LLLL yyyy", Locale.forLanguageTag("tr-TR")) }
     var visibleMonth by remember(monthName) {
         mutableStateOf(runCatching { YearMonth.parse(monthName, monthFormat) }.getOrElse { YearMonth.now() })
     }
@@ -167,7 +173,7 @@ fun ArcDatePicker(
     selectedDate: String,
     onDateSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Değerlendirme Tarihi"
+    label: String = "Tarih"
 ) {
     var isOpen by remember { mutableStateOf(false) }
     val dateText = runCatching { LocalDate.parse(selectedDate) }.getOrNull()
@@ -202,6 +208,7 @@ fun ArcDatePicker(
 }
 
 /** Start/end ISO dates. Each button opens the real native calendar picker. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ArcDateRangePicker(
     startDate: String,
@@ -209,20 +216,65 @@ fun ArcDateRangePicker(
     onRangeSelected: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isOpen by remember { mutableStateOf(false) }
+    val parsedStart = runCatching { LocalDate.parse(startDate) }.getOrNull()
+    val parsedEnd = runCatching { LocalDate.parse(endDate) }.getOrNull()
+    val formatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault()) }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Son güncelleme tarih aralığı", color = ArcTheme.colors.foreground, fontWeight = FontWeight.SemiBold)
-        ArcDatePicker(
-            selectedDate = startDate,
-            onDateSelected = { onRangeSelected(it, endDate) },
-            label = "Başlangıç",
-            modifier = Modifier.fillMaxWidth()
-        )
-        ArcDatePicker(
-            selectedDate = endDate,
-            onDateSelected = { onRangeSelected(startDate, it) },
-            label = "Bitiş",
-            modifier = Modifier.fillMaxWidth()
-        )
+        ArcButton(onClick = { isOpen = true }, modifier = Modifier.fillMaxWidth(), variant = ArcButtonVariant.Outline) {
+            Text(
+                text = if (parsedStart != null && parsedEnd != null) {
+                    "${parsedStart.format(formatter)} – ${parsedEnd.format(formatter)}"
+                } else "Tarih aralığı seçin"
+            )
+        }
+        if (isOpen) {
+            val initialStart = parsedStart ?: LocalDate.now().minusDays(6)
+            val initialEnd = parsedEnd?.takeIf { !it.isBefore(initialStart) } ?: initialStart
+            val rangeState = rememberDateRangePickerState(
+                initialSelectedStartDateMillis = initialStart.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+                initialSelectedEndDateMillis = initialEnd.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+            )
+            DatePickerDialog(
+                onDismissRequest = { isOpen = false },
+                confirmButton = {
+                    TextButton(
+                        enabled = rangeState.selectedStartDateMillis != null && rangeState.selectedEndDateMillis != null,
+                        onClick = {
+                            val startMillis = rangeState.selectedStartDateMillis
+                            val endMillis = rangeState.selectedEndDateMillis
+                            if (startMillis != null && endMillis != null) {
+                                val first = LocalDate.ofEpochDay(Math.floorDiv(startMillis, 86_400_000L))
+                                val last = LocalDate.ofEpochDay(Math.floorDiv(endMillis, 86_400_000L))
+                                if (!last.isBefore(first)) onRangeSelected(first.toString(), last.toString())
+                            }
+                            isOpen = false
+                        }
+                    ) { Text("Uygula") }
+                },
+                dismissButton = { TextButton(onClick = { isOpen = false }) { Text("Vazgeç") } }
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(7, 30, 90).forEach { days ->
+                            TextButton(onClick = {
+                                val end = LocalDate.now()
+                                onRangeSelected(end.minusDays((days - 1).toLong()).toString(), end.toString())
+                                isOpen = false
+                            }) { Text("Son $days gün") }
+                        }
+                    }
+                    DateRangePicker(
+                        state = rangeState,
+                        showModeToggle = false,
+                        modifier = Modifier.heightIn(max = 520.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -234,8 +286,14 @@ fun ArcTimePicker(
     hour: Int,
     minute: Int,
     onTimeChange: (Int, Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
+    val (safeHour, safeMinute) = normalizeArcTime(hour, minute)
+    val update: (Int, Int) -> Unit = { nextHour, nextMinute ->
+        val normalized = normalizeArcTime(nextHour, nextMinute)
+        onTimeChange(normalized.first, normalized.second)
+    }
     Surface(
         modifier = modifier,
         shape = ArcTheme.shapes.control,
@@ -243,15 +301,57 @@ fun ArcTimePicker(
         border = BorderStroke(1.dp, ArcTheme.colors.border)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = String.format("%02d:%02d", hour, minute),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = ArcTheme.colors.foreground
+            ArcTimeField(
+                value = safeHour,
+                range = 0..23,
+                label = "Saat",
+                enabled = enabled,
+                onValueChange = { update(it, safeMinute) }
             )
+            Text(":", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = ArcTheme.colors.foreground)
+            ArcTimeField(
+                value = safeMinute,
+                range = 0..59,
+                label = "Dakika",
+                enabled = enabled,
+                onValueChange = { update(safeHour, it) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ArcTimeField(
+    value: Int,
+    range: IntRange,
+    label: String,
+    enabled: Boolean,
+    onValueChange: (Int) -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        IconButton(
+            onClick = { onValueChange(value + 1) },
+            enabled = enabled && value < range.last,
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(Icons.Default.KeyboardArrowUp, contentDescription = "$label artır", tint = ArcTheme.colors.textSecondary)
+        }
+        Text(
+            text = "%02d".format(value),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = ArcTheme.colors.foreground
+        )
+        IconButton(
+            onClick = { onValueChange(value - 1) },
+            enabled = enabled && value > range.first,
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "$label azalt", tint = ArcTheme.colors.textSecondary)
         }
     }
 }

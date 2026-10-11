@@ -50,6 +50,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -366,12 +371,14 @@ fun <T> ArcSortableDataTable(
     modifier: Modifier = Modifier,
     onRowClick: ((T) -> Unit)? = null,
     pageSize: Int? = null,
-    rowKey: ((T) -> Any)? = null
+    rowKey: ((T) -> Any)? = null,
+    selectedItems: Set<T> = emptySet(),
+    onSelectionChanged: ((Set<T>) -> Unit)? = null
 ) {
     var sortColumnIndex by remember { mutableStateOf<Int?>(null) }
     var sortAscending by remember { mutableStateOf(true) }
 
-    val sortedItems = remember(items, sortColumnIndex, sortAscending) {
+    val sortedItems = remember(items, columns, sortColumnIndex, sortAscending) {
         val colIndex = sortColumnIndex
         if (colIndex != null) {
             val comp = columns.getOrNull(colIndex)?.comparator
@@ -404,10 +411,25 @@ fun <T> ArcSortableDataTable(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    if (onSelectionChanged != null) {
+                        val allSelected = visibleItems.isNotEmpty() && visibleItems.all { it in selectedItems }
+                        Box(modifier = Modifier.width(48.dp), contentAlignment = Alignment.CenterStart) {
+                            com.knigdelioglu.arc.compose.controls.ArcCheckbox(
+                                checked = allSelected,
+                                modifier = Modifier.semantics { contentDescription = "Sayfadaki tüm satırları seç" },
+                                enabled = visibleItems.isNotEmpty(),
+                                onCheckedChange = { checked ->
+                                    val pageRows = visibleItems.toSet()
+                                    onSelectionChanged(if (checked) selectedItems + pageRows else selectedItems - pageRows)
+                                }
+                            )
+                        }
+                    }
                     columns.forEachIndexed { index, col ->
+                        val columnWeight = col.weight.takeIf { it.isFinite() && it > 0f } ?: 1f
                         Row(
                             modifier = Modifier
-                                .weight(col.weight)
+                                .weight(columnWeight)
                                 .then(
                                     if (col.comparator != null) {
                                         Modifier.clickable {
@@ -416,6 +438,13 @@ fun <T> ArcSortableDataTable(
                                             } else {
                                                 sortColumnIndex = index
                                                 sortAscending = true
+                                            }
+                                        }.semantics {
+                                            role = Role.Button
+                                            stateDescription = when {
+                                                sortColumnIndex != index -> "Sıralama yok"
+                                                sortAscending -> "Artan sıralama"
+                                                else -> "Azalan sıralama"
                                             }
                                         }
                                     } else Modifier
@@ -459,8 +488,23 @@ fun <T> ArcSortableDataTable(
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            if (onSelectionChanged != null) {
+                                val selected = item in selectedItems
+                                Box(modifier = Modifier.width(48.dp), contentAlignment = Alignment.CenterStart) {
+                                    com.knigdelioglu.arc.compose.controls.ArcCheckbox(
+                                        checked = selected,
+                                        modifier = Modifier.semantics {
+                                            contentDescription = "${rowKey?.invoke(item) ?: item} satırını seç"
+                                        },
+                                        onCheckedChange = { checked ->
+                                            onSelectionChanged(if (checked) selectedItems + item else selectedItems - item)
+                                        }
+                                    )
+                                }
+                            }
                             columns.forEach { col ->
-                                Box(modifier = Modifier.weight(col.weight)) {
+                                val columnWeight = col.weight.takeIf { it.isFinite() && it > 0f } ?: 1f
+                                Box(modifier = Modifier.weight(columnWeight)) {
                                     col.content(item)
                                 }
                             }

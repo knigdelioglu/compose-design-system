@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,12 +13,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
@@ -35,8 +39,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -76,8 +78,8 @@ fun ArcCheckbox(
 
     Row(
         modifier = modifier
-            .semantics { role = Role.Checkbox }
-            .clickable(enabled = enabled) { onCheckedChange(!checked) }
+            .toggleable(value = checked, enabled = enabled, role = Role.Checkbox, onValueChange = onCheckedChange)
+            .heightIn(min = 48.dp)
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -164,11 +166,6 @@ fun ArcSwitch(
                 .size(trackWidth, trackHeight)
                 .clip(ArcTheme.shapes.pill)
                 .background(trackColor)
-                .semantics { role = Role.Switch }
-                .then(
-                    if (label == null) Modifier.clickable(enabled = enabled) { onCheckedChange(!checked) }
-                    else Modifier
-                )
                 .padding(vertical = 3.dp),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -183,22 +180,22 @@ fun ArcSwitch(
         }
     }
 
-    if (label != null) {
-        Row(
-            modifier = modifier.clickable(enabled = enabled) { onCheckedChange(!checked) },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            switchBox()
+    Row(
+        modifier = modifier
+            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
+            .heightIn(min = 48.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+            Box(Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp), contentAlignment = Alignment.Center) {
+                switchBox()
+            }
+            if (label != null) {
             Spacer(Modifier.width(10.dp))
             Text(
                 text = label,
                 fontSize = 15.sp,
                 color = if (enabled) colors.foreground else colors.textMuted
             )
-        }
-    } else {
-        Box(modifier = modifier) {
-            switchBox()
         }
     }
 }
@@ -212,15 +209,21 @@ fun <T> ArcRadioGroup(
     selectedOption: T,
     onOptionSelected: (T) -> Unit,
     modifier: Modifier = Modifier,
-    labelProvider: (T) -> String = { it.toString() }
+    labelProvider: (T) -> String = { it.toString() },
+    enabled: Boolean = true
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(modifier = modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { option ->
             val selected = option == selectedOption
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onOptionSelected(option) }
+                    .selectable(
+                        selected = selected,
+                        enabled = enabled,
+                        role = Role.RadioButton,
+                        onClick = { onOptionSelected(option) }
+                    )
                     .padding(vertical = 6.dp, horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -256,16 +259,22 @@ fun <T> ArcRadioCards(
     modifier: Modifier = Modifier,
     titleProvider: (T) -> String,
     descriptionProvider: ((T) -> String)? = null,
-    badgeProvider: ((T) -> String)? = null
+    badgeProvider: ((T) -> String)? = null,
+    enabled: Boolean = true
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(modifier = modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         options.forEach { option ->
             val selected = option == selectedOption
             val colors = ArcTheme.colors
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onOptionSelected(option) },
+                    .selectable(
+                        selected = selected,
+                        enabled = enabled,
+                        role = Role.RadioButton,
+                        onClick = { onOptionSelected(option) }
+                    ),
                 shape = ArcTheme.shapes.panel,
                 color = if (selected) colors.surfaceRaised else colors.surface,
                 border = BorderStroke(
@@ -345,23 +354,28 @@ fun ArcSegmentedControl(
     modifier: Modifier = Modifier
 ) {
     val colors = ArcTheme.colors
+    val safeSelectedIndex = selectedIndex.takeIf { it in items.indices } ?: -1
     Surface(
-        modifier = modifier.height(44.dp),
+        modifier = modifier.heightIn(min = 48.dp),
         shape = ArcTheme.shapes.pill,
         color = colors.surfaceMuted,
         border = BorderStroke(1.dp, colors.borderSubtle)
     ) {
         Row(
-            modifier = Modifier.padding(3.dp),
+            modifier = Modifier.padding(3.dp).selectableGroup(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEachIndexed { index, title ->
-                val selected = index == selectedIndex
+                val selected = index == safeSelectedIndex
                 Surface(
                     modifier = Modifier
                         .weight(1f)
-                        .height(38.dp)
-                        .clickable { onSelectIndex(index) },
+                        .height(42.dp)
+                        .selectable(
+                            selected = selected,
+                            role = Role.Tab,
+                            onClick = { onSelectIndex(index) }
+                        ),
                     shape = ArcTheme.shapes.pill,
                     color = if (selected) colors.surface else Color.Transparent,
                     border = if (selected) BorderStroke(1.dp, colors.border.copy(alpha = 0.5f)) else null,

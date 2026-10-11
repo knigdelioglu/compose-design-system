@@ -89,7 +89,7 @@ fun ArcCard(
 }
 
 /**
- * Arc Expandable Card: card with fluid expand/collapse toggle for long rubric descriptions or evidence notes.
+ * Arc Expandable Card: card with fluid expand/collapse toggle for long descriptions or supporting notes.
  */
 @Composable
 fun ArcExpandableCard(
@@ -190,7 +190,7 @@ fun ArcBadge(
 }
 
 /**
- * Arc Avatar: student initials avatar without exposing unnecessary photos or PII.
+ * Arc Avatar: initials avatar that can avoid exposing unnecessary photos or personal data.
  */
 @Composable
 fun ArcAvatar(
@@ -377,7 +377,7 @@ fun ArcSkeleton(
 }
 
 /**
- * Arc Empty State: guidance placeholder when classroom, rubric, or results are empty.
+ * Arc Empty State: guidance placeholder for an empty collection or result set.
  */
 @Composable
 fun ArcEmptyState(
@@ -610,7 +610,7 @@ fun ArcThemeSwitch(
 }
 
 /**
- * Arc Copy Button: copies student ID or report link to clipboard with brief check indicator.
+ * Arc Copy Button: copies text to the clipboard with a brief check indicator.
  */
 @Composable
 fun ArcCopyButton(

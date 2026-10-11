@@ -79,7 +79,8 @@ fun ArcInput(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
     maxLines: Int = 1,
-    label: String? = null
+    label: String? = null,
+    inputModifier: Modifier = Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val colors = ArcTheme.colors
@@ -128,7 +129,8 @@ fun ArcInput(
                     onValueChange = onValueChange,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .onFocusChanged { isFocused = it.isFocused },
+                        .onFocusChanged { isFocused = it.isFocused }
+                        .then(inputModifier),
                     enabled = enabled,
                     singleLine = singleLine,
                     maxLines = maxLines,
@@ -230,12 +232,14 @@ fun ArcSearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = "Öğrenci veya numara ara..."
+    placeholder: String = "Ara...",
+    inputModifier: Modifier = Modifier
 ) {
     ArcInput(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier,
+        inputModifier = inputModifier,
         placeholder = placeholder,
         leadingIcon = {
             Icon(
@@ -311,7 +315,7 @@ fun ArcExpandingSearch(
 }
 
 /**
- * Scoring stepper with numeric keyboard editing.
+ * Bounded integer stepper with numeric keyboard editing.
  * Typing remains local until IME Done / focus loss; never save each digit.
  * Null represents no value and remains distinct from numeric zero.
  */
@@ -320,19 +324,21 @@ fun ArcNumberField(
     value: Int?,
     onValueChange: (Int) -> Unit,
     min: Int = 0,
-    max: Int = 100,
+    max: Int = Int.MAX_VALUE,
     modifier: Modifier = Modifier,
     step: Int = 1,
     label: String? = null
 ) {
-    val current = value ?: min
+    val safeMin = min
+    val safeMax = max.coerceAtLeast(safeMin)
+    val current = (value ?: safeMin).coerceIn(safeMin, safeMax)
     var draft by remember { mutableStateOf(value?.toString() ?: "") }
     var focused by remember { mutableStateOf(false) }
     LaunchedEffect(value) {
         if (!focused) draft = value?.toString() ?: ""
     }
     val commit: () -> Unit = {
-        val parsed = ArcNumberInputRules.parse(draft, min, max)
+        val parsed = ArcNumberInputRules.parse(draft, safeMin, safeMax)
         if (parsed != null && parsed != value) onValueChange(parsed)
         draft = parsed?.toString() ?: value?.toString().orEmpty()
     }
@@ -349,12 +355,12 @@ fun ArcNumberField(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             ArcActionButton(
-                onClick = { onValueChange((current - step.coerceAtLeast(1)).coerceAtLeast(min)) },
+                onClick = { onValueChange((current.toLong() - step.coerceAtLeast(1)).coerceAtLeast(safeMin.toLong()).toInt()) },
                 size = ArcButtonSize.Sm,
-                enabled = value != null && current > min,
+                enabled = value != null && current > safeMin,
                 variant = ArcButtonVariant.Secondary
             ) {
-                Icon(Icons.Default.Remove, contentDescription = "Puan Azalt", modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Remove, contentDescription = "Değeri azalt", modifier = Modifier.size(16.dp))
             }
 
             Box(
@@ -364,7 +370,7 @@ fun ArcNumberField(
                 BasicTextField(
                     value = draft,
                     onValueChange = { candidate ->
-                        if (candidate.length <= 6 && candidate.all(Char::isDigit)) draft = candidate
+                        if (candidate.length <= 11 && (candidate.isEmpty() || candidate == "-" || candidate.removePrefix("-").all(Char::isDigit))) draft = candidate
                     },
                     modifier = Modifier
                         .width(62.dp)
@@ -374,7 +380,10 @@ fun ArcNumberField(
                             if (wasFocused && !state.isFocused) commit()
                         },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = if (safeMin < 0) KeyboardType.Text else KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
                     keyboardActions = KeyboardActions(onDone = { commit() }),
                     textStyle = TextStyle(
                         fontSize = 18.sp,
@@ -395,12 +404,12 @@ fun ArcNumberField(
             }
 
             ArcActionButton(
-                onClick = { onValueChange((current + step.coerceAtLeast(1)).coerceAtMost(max)) },
+                onClick = { onValueChange((current.toLong() + step.coerceAtLeast(1)).coerceAtMost(safeMax.toLong()).toInt()) },
                 size = ArcButtonSize.Sm,
-                enabled = value == null || current < max,
+                enabled = value == null || current < safeMax,
                 variant = ArcButtonVariant.Secondary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Puan Artır", modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Add, contentDescription = "Değeri artır", modifier = Modifier.size(16.dp))
             }
 
             if (label != null) {

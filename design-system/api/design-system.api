@@ -1,0 +1,851 @@
+public final class com/knigdelioglu/arc/compose/calendar/ArcScheduleBreak {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/time/LocalDate;Ljava/time/LocalDate;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/time/LocalDate;
+	public final fun component3 ()Ljava/time/LocalDate;
+	public final fun copy (Ljava/lang/String;Ljava/time/LocalDate;Ljava/time/LocalDate;)Lcom/knigdelioglu/arc/compose/calendar/ArcScheduleBreak;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/calendar/ArcScheduleBreak;Ljava/lang/String;Ljava/time/LocalDate;Ljava/time/LocalDate;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/calendar/ArcScheduleBreak;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEndDate ()Ljava/time/LocalDate;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getStartDate ()Ljava/time/LocalDate;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/calendar/ArcScheduleCalendarKt {
+	public static final fun ArcScheduleCalendar (Ljava/lang/Integer;Lkotlin/jvm/functions/Function1;Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/util/Locale;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/runtime/Composer;III)V
+}
+
+public final class com/knigdelioglu/arc/compose/calendar/ArcScheduleWeek {
+	public static final field $stable I
+	public fun <init> (ILjava/time/LocalDate;Ljava/time/LocalDate;Z)V
+	public synthetic fun <init> (ILjava/time/LocalDate;Ljava/time/LocalDate;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()I
+	public final fun component2 ()Ljava/time/LocalDate;
+	public final fun component3 ()Ljava/time/LocalDate;
+	public final fun component4 ()Z
+	public final fun copy (ILjava/time/LocalDate;Ljava/time/LocalDate;Z)Lcom/knigdelioglu/arc/compose/calendar/ArcScheduleWeek;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/calendar/ArcScheduleWeek;ILjava/time/LocalDate;Ljava/time/LocalDate;ZILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/calendar/ArcScheduleWeek;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEndDate ()Ljava/time/LocalDate;
+	public final fun getHasSpecialEvent ()Z
+	public final fun getNumber ()I
+	public final fun getStartDate ()Ljava/time/LocalDate;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcButtonSize : java/lang/Enum {
+	public static final field Lg Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;
+	public static final field Md Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;
+	public static final field Sm Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getFontSize ()I
+	public final fun getHeight-D9Ej5fM ()F
+	public final fun getHorizontalPadding-D9Ej5fM ()F
+	public final fun getIconSize-D9Ej5fM ()F
+	public static fun valueOf (Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;
+	public static fun values ()[Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcButtonVariant : java/lang/Enum {
+	public static final field Danger Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+	public static final field Ghost Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+	public static final field Outline Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+	public static final field Primary Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+	public static final field Secondary Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+	public static final field Success Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+	public static fun values ()[Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcButtonsKt {
+	public static final fun ArcActionButton (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;ZLandroidx/compose/ui/graphics/Shape;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcButton (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;ZZLkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/graphics/Shape;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcButton (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;ZZLkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/graphics/Shape;Landroidx/compose/foundation/interaction/MutableInteractionSource;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;III)V
+	public static final fun ArcButtonGroup (Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/Shape;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcButtonGroup (Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/Shape;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcExpandingButtonGroup (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcFloatingButtonGroup (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSplitButton (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Ljava/util/List;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSplitButton (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;Lcom/knigdelioglu/arc/compose/controls/ArcButtonSize;ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcConfirmationKt {
+	public static final fun ArcConfirmMorph (Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcHoldToConfirm (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;ILcom/knigdelioglu/arc/compose/controls/ArcButtonVariant;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcContextAction {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lcom/knigdelioglu/arc/compose/controls/ArcContextAction;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/controls/ArcContextAction;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/controls/ArcContextAction;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getOnSelect ()Lkotlin/jvm/functions/Function0;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcDropdownsKt {
+	public static final fun ArcCombobox (Ljava/lang/Object;Ljava/util/List;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function1;ZLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcContextMenu (Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Ljava/util/List;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcDropdownMenu (ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcMorphSelect (Ljava/lang/Object;Ljava/util/List;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Ljava/lang/String;ZLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcMultiSelect (Ljava/util/Set;Ljava/util/List;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;ZLjava/lang/String;Lkotlin/jvm/functions/Function2;ZLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSelect (Ljava/lang/Object;Ljava/util/List;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcHardwareKt {
+	public static final fun ArcShortcutRecorder (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/util/Set;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSignaturePad-T042LqI (Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;JFLkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcNumberInputRules {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/controls/ArcNumberInputRules;
+	public final fun parse (Ljava/lang/String;II)Ljava/lang/Integer;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcPickersKt {
+	public static final fun ArcCalendar (Ljava/lang/Integer;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;IILkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcColorPicker-euL9pac (JLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/util/List;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcDatePicker (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcDateRangePicker (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTimePicker (IILkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;ZLandroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcSelectionKt {
+	public static final fun ArcCheckbox (ZLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcRadioCards (Ljava/util/List;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ZLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcRadioGroup (Ljava/util/List;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;ZLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSegmentedControl (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSwitch (ZLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;ZLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcSignature {
+	public static final field $stable I
+	public fun <init> (Ljava/util/List;II)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun copy (Ljava/util/List;II)Lcom/knigdelioglu/arc/compose/controls/ArcSignature;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/controls/ArcSignature;Ljava/util/List;IIILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/controls/ArcSignature;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCanvasHeightPx ()I
+	public final fun getCanvasWidthPx ()I
+	public final fun getStrokes ()Ljava/util/List;
+	public fun hashCode ()I
+	public final fun isEmpty ()Z
+	public final fun toPngBytes-mxwnekA (IIJ)[B
+	public static synthetic fun toPngBytes-mxwnekA$default (Lcom/knigdelioglu/arc/compose/controls/ArcSignature;IIJILjava/lang/Object;)[B
+	public fun toString ()Ljava/lang/String;
+	public final fun toSvg (II)Ljava/lang/String;
+	public static synthetic fun toSvg$default (Lcom/knigdelioglu/arc/compose/controls/ArcSignature;IIILjava/lang/Object;)Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcSignaturePoint {
+	public static final field $stable I
+	public fun <init> (FFFJ)V
+	public synthetic fun <init> (FFFJILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()F
+	public final fun component2 ()F
+	public final fun component3 ()F
+	public final fun component4 ()J
+	public final fun copy (FFFJ)Lcom/knigdelioglu/arc/compose/controls/ArcSignaturePoint;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/controls/ArcSignaturePoint;FFFJILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/controls/ArcSignaturePoint;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPressure ()F
+	public final fun getTimeMillis ()J
+	public final fun getX ()F
+	public final fun getY ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcSignatureStroke {
+	public static final field $stable I
+	public synthetic fun <init> (Ljava/util/List;JFLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/util/List;
+	public final fun component2-0d7_KjU ()J
+	public final fun component3 ()F
+	public final fun copy-bw27NRU (Ljava/util/List;JF)Lcom/knigdelioglu/arc/compose/controls/ArcSignatureStroke;
+	public static synthetic fun copy-bw27NRU$default (Lcom/knigdelioglu/arc/compose/controls/ArcSignatureStroke;Ljava/util/List;JFILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/controls/ArcSignatureStroke;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor-0d7_KjU ()J
+	public final fun getPoints ()Ljava/util/List;
+	public final fun getWidthPx ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcSlidersKt {
+	public static final fun ArcElasticSlider (FLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/ranges/ClosedFloatingPointRange;Ljava/lang/Float;Lkotlin/jvm/functions/Function1;ZLjava/lang/String;Lkotlin/jvm/functions/Function1;ZLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSlider (FLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/ranges/ClosedFloatingPointRange;Lkotlin/jvm/functions/Function1;ZLandroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ArcTextInputKt {
+	public static final fun ArcExpandingSearch (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcInlineEdit (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/ui/text/TextStyle;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcInput (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;ZZLkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/foundation/text/KeyboardOptions;Landroidx/compose/foundation/text/KeyboardActions;ZILjava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;III)V
+	public static final fun ArcNumberField (Ljava/lang/Integer;Lkotlin/jvm/functions/Function1;IILandroidx/compose/ui/Modifier;ILjava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSearchField (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTagInput (Ljava/util/List;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTextarea (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;IIZLandroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcDropdownsKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcDropdownsKt;
+	public fun <init> ()V
+	public final fun getLambda$82206176$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcHardwareKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcHardwareKt;
+	public fun <init> ()V
+	public final fun getLambda$-1637691245$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-31171588$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1325611352$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$453465243$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcPickersKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcPickersKt;
+	public fun <init> ()V
+	public final fun getLambda$-1386521942$design_system_release ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-1644082226$design_system_release ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-463354516$design_system_release ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-565873049$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1929965648$design_system_release ()Lkotlin/jvm/functions/Function3;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcSelectionKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcSelectionKt;
+	public fun <init> ()V
+	public final fun getLambda$-1956248166$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-78689771$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$340683058$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcSlidersKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcSlidersKt;
+	public fun <init> ()V
+	public final fun getLambda$719837122$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcTextInputKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/controls/ComposableSingletons$ArcTextInputKt;
+	public fun <init> ()V
+	public final fun getLambda$-1401593627$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-982495976$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$2092358830$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$367382458$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$478847812$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ArcBarData {
+	public static final field $stable I
+	public synthetic fun <init> (Ljava/lang/String;FLandroidx/compose/ui/graphics/Color;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;FLandroidx/compose/ui/graphics/Color;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()F
+	public final fun component3-QN2ZGVo ()Landroidx/compose/ui/graphics/Color;
+	public final fun copy-t9lfQc4 (Ljava/lang/String;FLandroidx/compose/ui/graphics/Color;)Lcom/knigdelioglu/arc/compose/datavis/ArcBarData;
+	public static synthetic fun copy-t9lfQc4$default (Lcom/knigdelioglu/arc/compose/datavis/ArcBarData;Ljava/lang/String;FLandroidx/compose/ui/graphics/Color;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/datavis/ArcBarData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor-QN2ZGVo ()Landroidx/compose/ui/graphics/Color;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getValue ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ArcChartsKt {
+	public static final fun ArcActivityHeatmap (Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcBarChart-942rkJo (Ljava/util/List;Landroidx/compose/ui/Modifier;FLjava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcDonutChart (Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcGauge (FLjava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcLineChart (Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/ranges/ClosedFloatingPointRange;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSlopeChart (Ljava/util/List;Landroidx/compose/ui/Modifier;Lkotlin/ranges/ClosedFloatingPointRange;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSparkline-FNF3uiM (Ljava/util/List;Landroidx/compose/ui/Modifier;JLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcUsageMeter (IILjava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcWaffleChart (ILandroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ArcDataDisplayKt {
+	public static final fun ArcAnimatedCounter-ZYxptI4 (ILandroidx/compose/ui/Modifier;Ljava/lang/String;IJJLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcChipGroup (Ljava/util/List;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcFilterToolbar (Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcMetricCard (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSlotText (Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSortableDataTable (Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Ljava/lang/Integer;Lkotlin/jvm/functions/Function1;Ljava/util/Set;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcStatsBand (Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTextMorph (Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTextReveal (Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTextShimmer (Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ArcDonutSegment {
+	public static final field $stable I
+	public synthetic fun <init> (Ljava/lang/String;FJLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()F
+	public final fun component3-0d7_KjU ()J
+	public final fun copy-mxwnekA (Ljava/lang/String;FJ)Lcom/knigdelioglu/arc/compose/datavis/ArcDonutSegment;
+	public static synthetic fun copy-mxwnekA$default (Lcom/knigdelioglu/arc/compose/datavis/ArcDonutSegment;Ljava/lang/String;FJILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/datavis/ArcDonutSegment;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getColor-0d7_KjU ()J
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getValue ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ArcStatItem {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/datavis/ArcStatItem;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/datavis/ArcStatItem;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/datavis/ArcStatItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDetail ()Ljava/lang/String;
+	public final fun getLabel ()Ljava/lang/String;
+	public final fun getValue ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ArcTableColumn {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;FLjava/util/Comparator;Lkotlin/jvm/functions/Function3;)V
+	public synthetic fun <init> (Ljava/lang/String;FLjava/util/Comparator;Lkotlin/jvm/functions/Function3;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()F
+	public final fun component3 ()Ljava/util/Comparator;
+	public final fun component4 ()Lkotlin/jvm/functions/Function3;
+	public final fun copy (Ljava/lang/String;FLjava/util/Comparator;Lkotlin/jvm/functions/Function3;)Lcom/knigdelioglu/arc/compose/datavis/ArcTableColumn;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/datavis/ArcTableColumn;Ljava/lang/String;FLjava/util/Comparator;Lkotlin/jvm/functions/Function3;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/datavis/ArcTableColumn;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getComparator ()Ljava/util/Comparator;
+	public final fun getContent ()Lkotlin/jvm/functions/Function3;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getWeight ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ComposableSingletons$ArcChartsKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/datavis/ComposableSingletons$ArcChartsKt;
+	public fun <init> ()V
+	public final fun getLambda$-21970244$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/datavis/ComposableSingletons$ArcDataDisplayKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/datavis/ComposableSingletons$ArcDataDisplayKt;
+	public fun <init> ()V
+	public final fun getLambda$-2138241352$design_system_release ()Lkotlin/jvm/functions/Function4;
+	public final fun getLambda$617515564$design_system_release ()Lkotlin/jvm/functions/Function4;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcAlertVariant : java/lang/Enum {
+	public static final field Danger Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;
+	public static final field Info Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;
+	public static final field Success Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;
+	public static final field Warning Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;
+	public static fun values ()[Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcBadgeVariant : java/lang/Enum {
+	public static final field Accent Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;
+	public static final field Danger Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;
+	public static final field Default Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;
+	public static final field Success Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;
+	public static final field Warning Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;
+	public static fun values ()[Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcDisplayBasicsKt {
+	public static final fun ArcAccordion (Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcAlert (Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;Lcom/knigdelioglu/arc/compose/display/ArcAlertVariant;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcAnnouncementBar (Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcAvatar-EfRbmQ0 (Ljava/lang/String;Landroidx/compose/ui/Modifier;FJLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcAvatarGroup-942rkJo (Ljava/util/List;Landroidx/compose/ui/Modifier;FILandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcBadge (Ljava/lang/String;Landroidx/compose/ui/Modifier;Lcom/knigdelioglu/arc/compose/display/ArcBadgeVariant;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcCard-yE4rkUQ (Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/Shape;JLandroidx/compose/foundation/BorderStroke;FLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcCopyButton (Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcEmptyState (Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/vector/ImageVector;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcExpandableCard (Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function2;ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcProgress-aWONUgI (FLandroidx/compose/ui/Modifier;FJJLandroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSkeleton (Landroidx/compose/ui/Modifier;Landroidx/compose/ui/graphics/Shape;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcThemeSwitch (ZLkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTreeView (Ljava/util/List;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcFeedbackKt {
+	public static final fun ArcChangelogFeed (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Landroidx/compose/ui/Modifier;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcComparisonTable (Ljava/util/List;Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcDialog (ZLkotlin/jvm/functions/Function0;Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcDialog (ZLkotlin/jvm/functions/Function0;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcFaqSection (Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcJsonViewer (Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcNotificationCenter (Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcPopover (ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcSwipeActions (Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTimeline (Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcToast (Lcom/knigdelioglu/arc/compose/display/ArcToastMessage;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcToastStack (Ljava/util/List;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTooltip (Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcUserMenu (Ljava/lang/String;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcImageDropPolicy {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/display/ArcImageDropPolicy;
+	public final fun accepts (Ljava/util/Collection;)Z
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcMediaKt {
+	public static final fun ArcFileDropzone (Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcFileUpload (Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroid/graphics/Bitmap;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcImageCompare (Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/ui/Modifier;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcNotificationItem {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/display/ArcNotificationItem;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/display/ArcNotificationItem;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/display/ArcNotificationItem;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDetails ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getTimestamp ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcTimelineEntry {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;)Lcom/knigdelioglu/arc/compose/display/ArcTimelineEntry;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/display/ArcTimelineEntry;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroidx/compose/ui/graphics/vector/ImageVector;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/display/ArcTimelineEntry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getIcon ()Landroidx/compose/ui/graphics/vector/ImageVector;
+	public final fun getSubtitle ()Ljava/lang/String;
+	public final fun getTime ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcToastMessage {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lcom/knigdelioglu/arc/compose/display/ArcToastMessage;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/display/ArcToastMessage;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/display/ArcToastMessage;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDescription ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public final fun getUndoAction ()Lkotlin/jvm/functions/Function0;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ArcTreeNode {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/String;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/util/List;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Lcom/knigdelioglu/arc/compose/display/ArcTreeNode;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/display/ArcTreeNode;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/display/ArcTreeNode;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getChildren ()Ljava/util/List;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ComposableSingletons$ArcFeedbackKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/display/ComposableSingletons$ArcFeedbackKt;
+	public fun <init> ()V
+	public final fun getLambda$-52679950$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-741450493$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1708972442$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/display/ComposableSingletons$ArcMediaKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/display/ComposableSingletons$ArcMediaKt;
+	public fun <init> ()V
+	public final fun getLambda$-1497530640$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-500277322$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1397756670$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1803975074$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/editor/ArcRichTextEditorKt {
+	public static final fun ArcRichTextEditor (Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/lang/String;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/editor/FormattedNote {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;II)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun copy (Ljava/lang/String;II)Lcom/knigdelioglu/arc/compose/editor/FormattedNote;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/editor/FormattedNote;Ljava/lang/String;IIILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/editor/FormattedNote;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getSelectionEnd ()I
+	public final fun getSelectionStart ()I
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/editor/NoteFormat : java/lang/Enum {
+	public static final field BOLD Lcom/knigdelioglu/arc/compose/editor/NoteFormat;
+	public static final field ITALIC Lcom/knigdelioglu/arc/compose/editor/NoteFormat;
+	public static final field LIST Lcom/knigdelioglu/arc/compose/editor/NoteFormat;
+	public static final field QUOTE Lcom/knigdelioglu/arc/compose/editor/NoteFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/editor/NoteFormat;
+	public static fun values ()[Lcom/knigdelioglu/arc/compose/editor/NoteFormat;
+}
+
+public final class com/knigdelioglu/arc/compose/editor/NoteFormattingKt {
+	public static final fun formatNote (Ljava/lang/String;IILcom/knigdelioglu/arc/compose/editor/NoteFormat;)Lcom/knigdelioglu/arc/compose/editor/FormattedNote;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/AndroidMotionPreference {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/foundation/AndroidMotionPreference;
+	public final fun read (Landroid/content/ContentResolver;)Z
+	public final fun shouldReduce (F)Z
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/AndroidMotionPreferenceKt {
+	public static final fun rememberSystemReducedMotion (Landroidx/compose/runtime/Composer;I)Z
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcAccent : java/lang/Enum {
+	public static final field Amber Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static final field Blue Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static final field Coral Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static final field Green Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static final field Neutral Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static final field Orange Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static final field Rose Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static final field Violet Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public static fun values ()[Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcColors {
+	public static final field $stable I
+	public synthetic fun <init> (ZJJJJJJJJJJJJJJJJJJJJJJJJJLcom/knigdelioglu/arc/compose/foundation/ArcAccent;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (ZJJJJJJJJJJJJJJJJJJJJJJJJJLcom/knigdelioglu/arc/compose/foundation/ArcAccent;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component10-0d7_KjU ()J
+	public final fun component11-0d7_KjU ()J
+	public final fun component12-0d7_KjU ()J
+	public final fun component13-0d7_KjU ()J
+	public final fun component14-0d7_KjU ()J
+	public final fun component15-0d7_KjU ()J
+	public final fun component16-0d7_KjU ()J
+	public final fun component17-0d7_KjU ()J
+	public final fun component18-0d7_KjU ()J
+	public final fun component19-0d7_KjU ()J
+	public final fun component2-0d7_KjU ()J
+	public final fun component20-0d7_KjU ()J
+	public final fun component21-0d7_KjU ()J
+	public final fun component22-0d7_KjU ()J
+	public final fun component23-0d7_KjU ()J
+	public final fun component24-0d7_KjU ()J
+	public final fun component25-0d7_KjU ()J
+	public final fun component26-0d7_KjU ()J
+	public final fun component27 ()Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public final fun component3-0d7_KjU ()J
+	public final fun component4-0d7_KjU ()J
+	public final fun component5-0d7_KjU ()J
+	public final fun component6-0d7_KjU ()J
+	public final fun component7-0d7_KjU ()J
+	public final fun component8-0d7_KjU ()J
+	public final fun component9-0d7_KjU ()J
+	public final fun copy-oexVTnU (ZJJJJJJJJJJJJJJJJJJJJJJJJJLcom/knigdelioglu/arc/compose/foundation/ArcAccent;)Lcom/knigdelioglu/arc/compose/foundation/ArcColors;
+	public static synthetic fun copy-oexVTnU$default (Lcom/knigdelioglu/arc/compose/foundation/ArcColors;ZJJJJJJJJJJJJJJJJJJJJJJJJJLcom/knigdelioglu/arc/compose/foundation/ArcAccent;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/foundation/ArcColors;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAccent-0d7_KjU ()J
+	public final fun getAccentForeground-0d7_KjU ()J
+	public final fun getAccentStrong-0d7_KjU ()J
+	public final fun getAccentSubtle-0d7_KjU ()J
+	public final fun getAccentVariant ()Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;
+	public final fun getBackground-0d7_KjU ()J
+	public final fun getBorder-0d7_KjU ()J
+	public final fun getBorderStrong-0d7_KjU ()J
+	public final fun getBorderSubtle-0d7_KjU ()J
+	public final fun getBrandGradient ()Landroidx/compose/ui/graphics/Brush;
+	public final fun getBrandGradientInk ()Landroidx/compose/ui/graphics/Brush;
+	public final fun getBrandGradientSoft ()Landroidx/compose/ui/graphics/Brush;
+	public final fun getControlGlyph-0d7_KjU ()J
+	public final fun getControlOn-0d7_KjU ()J
+	public final fun getControlThumb-0d7_KjU ()J
+	public final fun getControlTrack-0d7_KjU ()J
+	public final fun getDanger-0d7_KjU ()J
+	public final fun getDataVisualizationPalette ()Ljava/util/List;
+	public final fun getForeground-0d7_KjU ()J
+	public final fun getGradientForeground-0d7_KjU ()J
+	public final fun getGradientFrom-0d7_KjU ()J
+	public final fun getGradientTo-0d7_KjU ()J
+	public final fun getInfo-0d7_KjU ()J
+	public final fun getSuccess-0d7_KjU ()J
+	public final fun getSurface-0d7_KjU ()J
+	public final fun getSurfaceMuted-0d7_KjU ()J
+	public final fun getSurfaceRaised-0d7_KjU ()J
+	public final fun getTextMuted-0d7_KjU ()J
+	public final fun getTextSecondary-0d7_KjU ()J
+	public final fun getWarning-0d7_KjU ()J
+	public fun hashCode ()I
+	public final fun isDark ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcColorsKt {
+	public static final fun getArcDarkColors ()Lcom/knigdelioglu/arc/compose/foundation/ArcColors;
+	public static final fun getArcLightColors ()Lcom/knigdelioglu/arc/compose/foundation/ArcColors;
+	public static final fun withAccent (Lcom/knigdelioglu/arc/compose/foundation/ArcColors;Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;)Lcom/knigdelioglu/arc/compose/foundation/ArcColors;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcMotion {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/foundation/ArcMotion;
+	public final fun getCurrent (Landroidx/compose/runtime/Composer;I)Lcom/knigdelioglu/arc/compose/foundation/ArcMotionTokens;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcMotionTokens {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (ZIIIIIIIIFLandroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;)V
+	public synthetic fun <init> (ZIIIIIIIIFLandroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Z
+	public final fun component10 ()F
+	public final fun component11 ()Landroidx/compose/animation/core/Easing;
+	public final fun component12 ()Landroidx/compose/animation/core/Easing;
+	public final fun component13 ()Landroidx/compose/animation/core/Easing;
+	public final fun component14 ()Landroidx/compose/animation/core/Easing;
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun component4 ()I
+	public final fun component5 ()I
+	public final fun component6 ()I
+	public final fun component7 ()I
+	public final fun component8 ()I
+	public final fun component9 ()I
+	public final fun copy (ZIIIIIIIIFLandroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;)Lcom/knigdelioglu/arc/compose/foundation/ArcMotionTokens;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/foundation/ArcMotionTokens;ZIIIIIIIIFLandroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;Landroidx/compose/animation/core/Easing;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/foundation/ArcMotionTokens;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun fastTween (I)Landroidx/compose/animation/core/DurationBasedAnimationSpec;
+	public static synthetic fun fastTween$default (Lcom/knigdelioglu/arc/compose/foundation/ArcMotionTokens;IILjava/lang/Object;)Landroidx/compose/animation/core/DurationBasedAnimationSpec;
+	public final fun getBlurEnterRadiusDp ()F
+	public final fun getDurationConsidered ()I
+	public final fun getDurationExit ()I
+	public final fun getDurationFast ()I
+	public final fun getDurationInstant ()I
+	public final fun getDurationSpring ()I
+	public final fun getDurationStandard ()I
+	public final fun getEaseEnter ()Landroidx/compose/animation/core/Easing;
+	public final fun getEaseExit ()Landroidx/compose/animation/core/Easing;
+	public final fun getEaseInOut ()Landroidx/compose/animation/core/Easing;
+	public final fun getEaseStandard ()Landroidx/compose/animation/core/Easing;
+	public final fun getMaxStaggerItems ()I
+	public final fun getReducedMotion ()Z
+	public final fun getStaggerDelayMillis ()I
+	public fun hashCode ()I
+	public final fun springGentle ()Landroidx/compose/animation/core/FiniteAnimationSpec;
+	public final fun springMorph ()Landroidx/compose/animation/core/FiniteAnimationSpec;
+	public final fun springResponsive ()Landroidx/compose/animation/core/FiniteAnimationSpec;
+	public final fun springSmooth ()Landroidx/compose/animation/core/FiniteAnimationSpec;
+	public final fun springSnappy ()Landroidx/compose/animation/core/FiniteAnimationSpec;
+	public final fun staggerDelay (I)I
+	public final fun standardTween (I)Landroidx/compose/animation/core/DurationBasedAnimationSpec;
+	public static synthetic fun standardTween$default (Lcom/knigdelioglu/arc/compose/foundation/ArcMotionTokens;IILjava/lang/Object;)Landroidx/compose/animation/core/DurationBasedAnimationSpec;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcMotionTokensKt {
+	public static final fun getLocalArcMotion ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcShapes {
+	public static final field $stable I
+	public fun <init> ()V
+	public fun <init> (Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;)V
+	public synthetic fun <init> (Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun component2 ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun component3 ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun component4 ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun component5 ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun copy (Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;)Lcom/knigdelioglu/arc/compose/foundation/ArcShapes;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/foundation/ArcShapes;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;Landroidx/compose/foundation/shape/RoundedCornerShape;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/foundation/ArcShapes;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getControl ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun getPanel ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun getPill ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun getSmall ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public final fun getSurface ()Landroidx/compose/foundation/shape/RoundedCornerShape;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcShapesKt {
+	public static final fun getLocalArcShapes ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcSpacing {
+	public static final field $stable I
+	public synthetic fun <init> (FFFFFFFFFFFFFFILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (FFFFFFFFFFFFFFLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1-D9Ej5fM ()F
+	public final fun component10-D9Ej5fM ()F
+	public final fun component11-D9Ej5fM ()F
+	public final fun component12-D9Ej5fM ()F
+	public final fun component13-D9Ej5fM ()F
+	public final fun component14-D9Ej5fM ()F
+	public final fun component2-D9Ej5fM ()F
+	public final fun component3-D9Ej5fM ()F
+	public final fun component4-D9Ej5fM ()F
+	public final fun component5-D9Ej5fM ()F
+	public final fun component6-D9Ej5fM ()F
+	public final fun component7-D9Ej5fM ()F
+	public final fun component8-D9Ej5fM ()F
+	public final fun component9-D9Ej5fM ()F
+	public final fun copy--M8Hj70 (FFFFFFFFFFFFFF)Lcom/knigdelioglu/arc/compose/foundation/ArcSpacing;
+	public static synthetic fun copy--M8Hj70$default (Lcom/knigdelioglu/arc/compose/foundation/ArcSpacing;FFFFFFFFFFFFFFILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/foundation/ArcSpacing;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getControlHeightLg-D9Ej5fM ()F
+	public final fun getControlHeightMd-D9Ej5fM ()F
+	public final fun getControlHeightSm-D9Ej5fM ()F
+	public final fun getMinTouchTarget-D9Ej5fM ()F
+	public final fun getSpace1-D9Ej5fM ()F
+	public final fun getSpace10-D9Ej5fM ()F
+	public final fun getSpace12-D9Ej5fM ()F
+	public final fun getSpace16-D9Ej5fM ()F
+	public final fun getSpace2-D9Ej5fM ()F
+	public final fun getSpace3-D9Ej5fM ()F
+	public final fun getSpace4-D9Ej5fM ()F
+	public final fun getSpace5-D9Ej5fM ()F
+	public final fun getSpace6-D9Ej5fM ()F
+	public final fun getSpace8-D9Ej5fM ()F
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcSpacingKt {
+	public static final fun getLocalArcSpacing ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcTheme {
+	public static final field $stable I
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/foundation/ArcTheme;
+	public final fun getColors (Landroidx/compose/runtime/Composer;I)Lcom/knigdelioglu/arc/compose/foundation/ArcColors;
+	public final fun getMotion (Landroidx/compose/runtime/Composer;I)Lcom/knigdelioglu/arc/compose/foundation/ArcMotionTokens;
+	public final fun getShapes (Landroidx/compose/runtime/Composer;I)Lcom/knigdelioglu/arc/compose/foundation/ArcShapes;
+	public final fun getSpacing (Landroidx/compose/runtime/Composer;I)Lcom/knigdelioglu/arc/compose/foundation/ArcSpacing;
+}
+
+public final class com/knigdelioglu/arc/compose/foundation/ArcThemeKt {
+	public static final fun ArcTheme (ZLjava/lang/Boolean;Lcom/knigdelioglu/arc/compose/foundation/ArcAccent;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTheme (ZLjava/lang/Boolean;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun getLocalArcColors ()Landroidx/compose/runtime/ProvidableCompositionLocal;
+}
+
+public final class com/knigdelioglu/arc/compose/navigation/ArcCommandAction {
+	public static final field $stable I
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Lkotlin/jvm/functions/Function0;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;)Lcom/knigdelioglu/arc/compose/navigation/ArcCommandAction;
+	public static synthetic fun copy$default (Lcom/knigdelioglu/arc/compose/navigation/ArcCommandAction;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;ILjava/lang/Object;)Lcom/knigdelioglu/arc/compose/navigation/ArcCommandAction;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCategory ()Ljava/lang/String;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getOnExecute ()Lkotlin/jvm/functions/Function0;
+	public final fun getShortcut ()Ljava/lang/String;
+	public final fun getTitle ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/knigdelioglu/arc/compose/navigation/ArcNavComponentsKt {
+	public static final fun ArcBottomSheet (ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcBreadcrumb (Ljava/util/List;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcCardStack (Ljava/util/List;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcCarousel (Ljava/util/List;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function3;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcCommandPalette (ZLkotlin/jvm/functions/Function0;Ljava/util/List;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcDrawer (ZLkotlin/jvm/functions/Function0;Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcPageHeader (Ljava/lang/String;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcPagination (IILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcScrollArea (Landroidx/compose/ui/Modifier;Landroidx/compose/foundation/ScrollState;Lkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcStepper (Ljava/util/List;ILandroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+	public static final fun ArcTabs (Ljava/util/List;ILkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Ljava/util/List;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/navigation/ArcResizablePanelsKt {
+	public static final fun ArcResizablePanels (Landroidx/compose/ui/Modifier;Ljava/util/List;Ljava/util/List;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;Ljava/util/List;Ljava/util/Set;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class com/knigdelioglu/arc/compose/navigation/ComposableSingletons$ArcNavComponentsKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/navigation/ComposableSingletons$ArcNavComponentsKt;
+	public fun <init> ()V
+	public final fun getLambda$-1113574322$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$-1925796636$design_system_release ()Lkotlin/jvm/functions/Function3;
+	public final fun getLambda$-415304513$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1317281573$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$369764815$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$396985560$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
+public final class com/knigdelioglu/arc/compose/navigation/ComposableSingletons$ArcResizablePanelsKt {
+	public static final field INSTANCE Lcom/knigdelioglu/arc/compose/navigation/ComposableSingletons$ArcResizablePanelsKt;
+	public fun <init> ()V
+	public final fun getLambda$300949589$design_system_release ()Lkotlin/jvm/functions/Function2;
+}
+
