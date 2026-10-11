@@ -36,4 +36,14 @@ class ArcMotionTest {
         assertEquals(160, motion.staggerDelay(4))
         assertTrue(motion.springResponsive<Float>() !is androidx.compose.animation.core.SnapSpec)
     }
+
+    @Test
+    fun consideredMotionUsesItsTokenAndSnapsWhenReduced() {
+        val regular = ArcMotionTokens().consideredTween<Float>()
+        assertTrue(regular is androidx.compose.animation.core.TweenSpec)
+        assertEquals(480, (regular as androidx.compose.animation.core.TweenSpec).durationMillis)
+
+        val reduced = ArcMotionTokens(reducedMotion = true).consideredTween<Float>()
+        assertTrue(reduced is androidx.compose.animation.core.SnapSpec)
+    }
 }
