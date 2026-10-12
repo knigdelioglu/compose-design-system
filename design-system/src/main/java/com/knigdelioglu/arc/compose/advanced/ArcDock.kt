@@ -137,6 +137,7 @@ fun ArcDock(
                                     enabled = item.enabled,
                                     role = Role.Tab,
                                     interactionSource = pressedSource,
+                                    indication = null,
                                     onClick = { onItemSelected(item.key) }
                                 )
                                 .semantics {

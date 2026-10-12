@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.advanced
 
+import androidx.compose.ui.draw.clip
 import android.app.Activity
 import android.content.ContextWrapper
 import android.os.Build
@@ -175,6 +176,7 @@ fun ArcMorphNavigation(
                                 .fillMaxWidth()
                                 .onFocusChanged { focused = it.isFocused }
                                 .border(1.dp, if (focused) colors.accentStrong else colors.border.copy(alpha = 0f), ArcTheme.shapes.control)
+                                .clip(ArcTheme.shapes.control)
                                 .selectable(
                                     selected = isSelected,
                                     enabled = destination.enabled,
