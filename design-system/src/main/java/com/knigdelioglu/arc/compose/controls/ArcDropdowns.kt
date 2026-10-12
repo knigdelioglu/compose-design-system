@@ -91,6 +91,7 @@ fun <T> ArcSelect(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(ArcTheme.shapes.control)
                 .clickable { expanded = true },
             shape = ArcTheme.shapes.control,
             color = colors.surface,
@@ -165,6 +166,7 @@ fun <T> ArcCombobox(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(ArcTheme.shapes.control)
                 .clickable(enabled = enabled) { query = ""; isOpen = true },
             shape = ArcTheme.shapes.control,
             color = colors.surface,
@@ -469,6 +471,7 @@ fun <T> ArcMorphSelect(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(ArcTheme.shapes.control)
                     .clickable(enabled = enabled) {
                         if (expanded) expanded = false
                         else {
