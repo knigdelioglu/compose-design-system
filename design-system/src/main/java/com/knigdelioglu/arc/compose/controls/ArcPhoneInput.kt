@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.controls
 
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -112,8 +113,9 @@ fun ArcPhoneInput(
                         fontSize = 13.sp,
                         modifier = Modifier
                             .semantics { role = Role.Button; contentDescription = "Country ${country.name}, ${country.callingCode}" }
-                            .clickable(enabled = enabled) { menuExpanded = true }
                             .defaultMinSize(minHeight = ArcTheme.spacing.minTouchTarget)
+                            .clip(ArcTheme.shapes.small)
+                            .clickable(enabled = enabled) { menuExpanded = true }
                             .padding(horizontal = 10.dp, vertical = 10.dp)
                     )
                     DropdownMenu(

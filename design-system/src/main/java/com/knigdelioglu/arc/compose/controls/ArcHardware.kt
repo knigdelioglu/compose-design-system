@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.controls
 
+import androidx.compose.ui.draw.clip
 import android.view.KeyEvent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -144,6 +145,7 @@ fun ArcShortcutRecorder(
                     }
                 }
             }
+            .clip(ArcTheme.shapes.control)
             .clickable {
                 if (isRecording) stopRecording() else {
                     hasConflict = false
