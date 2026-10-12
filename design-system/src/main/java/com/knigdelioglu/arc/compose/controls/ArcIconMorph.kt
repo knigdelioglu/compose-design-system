@@ -1,5 +1,10 @@
 package com.knigdelioglu.arc.compose.controls
 
+import androidx.compose.ui.draw.scale
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -40,6 +45,13 @@ fun ArcIconMorph(
         label = "arcIconMorph"
     )
     val colors = ArcTheme.colors
+    val interactionSource = remember { MutableInteractionSource() }
+    val pressed by interactionSource.collectIsPressedAsState()
+    val pressScale by animateFloatAsState(
+        targetValue = if (pressed && enabled) 0.94f else 1f,
+        animationSpec = motion.springSnappy(),
+        label = "arcIconMorphPress"
+    )
     Box(
         modifier = modifier.size(touchTargetSize)
             .semantics {
@@ -47,10 +59,15 @@ fun ArcIconMorph(
                 this.contentDescription = contentDescription
                 stateDescription = if (expanded) expandedStateDescription else collapsedStateDescription
             }
-            .clickable(enabled = enabled) { onExpandedChange(!expanded) },
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = { onExpandedChange(!expanded) }
+            ),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(Modifier.size(glyphSize)) {
+        Canvas(Modifier.size(glyphSize).scale(pressScale)) {
             val p = progress.value
             val left = size.width * 0.14f
             val right = size.width * 0.86f

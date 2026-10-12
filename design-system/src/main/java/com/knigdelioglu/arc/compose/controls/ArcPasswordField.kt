@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.controls
 
+import androidx.compose.ui.draw.clip
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -150,6 +151,7 @@ fun ArcPasswordField(
                 Spacer(Modifier.size(8.dp))
                 Box(
                     modifier = Modifier.size(ArcTheme.spacing.minTouchTarget)
+                        .clip(CircleShape)
                         .clickable(enabled = enabled) {
                             val next = !isRevealed
                             if (revealed == null) localReveal = next

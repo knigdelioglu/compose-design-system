@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.controls
 
+import androidx.compose.ui.draw.clip
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -396,6 +397,7 @@ fun ArcExpandingButtonGroup(
             val selected = index == selectedIndex
             Surface(
                 modifier = Modifier
+                    .clip(ArcTheme.shapes.pill)
                     .clickable { onSelectIndex(index) }
                     .animateContentSize(animationSpec = motion.fastTween()),
                 shape = ArcTheme.shapes.pill,

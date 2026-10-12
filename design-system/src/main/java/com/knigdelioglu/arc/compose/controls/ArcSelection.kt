@@ -78,7 +78,14 @@ fun ArcCheckbox(
 
     Row(
         modifier = modifier
-            .toggleable(value = checked, enabled = enabled, role = Role.Checkbox, onValueChange = onCheckedChange)
+            .toggleable(
+                value = checked,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = enabled,
+                role = Role.Checkbox,
+                onValueChange = onCheckedChange
+            )
             .heightIn(min = 48.dp)
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -182,7 +189,14 @@ fun ArcSwitch(
 
     Row(
         modifier = modifier
-            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
+            .toggleable(
+                value = checked,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = enabled,
+                role = Role.Switch,
+                onValueChange = onCheckedChange
+            )
             .heightIn(min = 48.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -218,8 +232,11 @@ fun <T> ArcRadioGroup(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(ArcTheme.shapes.panel)
                     .selectable(
                         selected = selected,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
                         enabled = enabled,
                         role = Role.RadioButton,
                         onClick = { onOptionSelected(option) }
@@ -371,6 +388,7 @@ fun ArcSegmentedControl(
                     modifier = Modifier
                         .weight(1f)
                         .height(42.dp)
+                        .clip(ArcTheme.shapes.pill)
                         .selectable(
                             selected = selected,
                             role = Role.Tab,

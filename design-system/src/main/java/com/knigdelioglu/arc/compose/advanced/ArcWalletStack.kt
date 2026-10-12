@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.advanced
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
@@ -217,7 +218,12 @@ fun ArcWalletStack(
                                 .zIndex((visibleCards.size - index).toFloat())
                                 .then(dragModifier)
                                 .onFocusChanged { focused.value = it.isFocused }
-                                .clickable(enabled = card.enabled) { onSelectedKeyChange(card.key) }
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    enabled = card.enabled,
+                                    onClick = { onSelectedKeyChange(card.key) }
+                                )
                                 .semantics(mergeDescendants = true) {
                                     contentDescription = card.contentDescription
                                     this.selected = selected

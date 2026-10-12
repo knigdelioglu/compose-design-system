@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.advanced
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
@@ -195,7 +196,12 @@ fun ArcCoverFlow(
                                 cameraDistance = 20f * density
                             }
                             .onFocusChanged { focused.value = it.isFocused }
-                            .clickable(enabled = item.enabled) { requestIndex(index) }
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                enabled = item.enabled,
+                                onClick = { requestIndex(index) }
+                            )
                             .semantics(mergeDescendants = true) {
                                 contentDescription = item.contentDescription
                                 this.selected = selected

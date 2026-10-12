@@ -153,6 +153,7 @@ fun ArcGlassTabBar(
                                 }
                                 .onFocusChanged { focused.value = it.isFocused }
                                 .border(1.dp, if (focused.value) colors.accentStrong else Color.Transparent, RoundedCornerShape(18.dp))
+                                .clip(RoundedCornerShape(18.dp))
                                 .selectable(
                                     selected = selected,
                                     enabled = tab.enabled,

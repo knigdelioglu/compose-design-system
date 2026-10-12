@@ -1,5 +1,6 @@
 package com.knigdelioglu.arc.compose.controls
 
+import androidx.compose.ui.draw.clip
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -69,6 +70,7 @@ fun ArcBillingToggle(
                         selected = isSelected
                         contentDescription = if (period == ArcBillingPeriod.Yearly && savingsLabel != null) "$label, $savingsLabel" else label
                     }
+                    .clip(ArcTheme.shapes.pill)
                     .clickable(enabled = enabled && !isSelected) { onPeriodChange(period) },
                 shape = ArcTheme.shapes.pill,
                 color = backgroundColor,
