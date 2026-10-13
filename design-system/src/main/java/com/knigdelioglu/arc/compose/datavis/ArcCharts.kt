@@ -60,7 +60,9 @@ fun ArcBarChart(
     barHeight: Dp = 140.dp,
     title: String = "Dağılım"
 ) {
-    val safeData = data.map { it.copy(value = it.value.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f) }
+    val safeData = remember(data) {
+        data.map { it.copy(value = it.value.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f) }
+    }
     val maxValue = (safeData.maxOfOrNull { it.value } ?: 1f).coerceAtLeast(1f)
     val colors = ArcTheme.colors
 
@@ -244,7 +246,7 @@ fun ArcSparkline(
     modifier: Modifier = Modifier,
     lineColor: Color = ArcTheme.colors.accent
 ) {
-    val safePoints = points.filter(Float::isFinite)
+    val safePoints = remember(points) { points.filter(Float::isFinite) }
     if (safePoints.size < 2) return
 
     val min = safePoints.minOrNull() ?: 0f
