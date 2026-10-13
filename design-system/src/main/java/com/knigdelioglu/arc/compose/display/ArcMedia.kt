@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -243,7 +244,7 @@ fun ArcImageCompare(
     beforeLabel: String = "Önce",
     afterLabel: String = "Sonra"
 ) {
-    var splitFraction by remember { mutableFloatStateOf(0.5f) }
+    var splitFraction by rememberSaveable { mutableFloatStateOf(0.5f) }
     val density = LocalDensity.current
 
     Surface(
