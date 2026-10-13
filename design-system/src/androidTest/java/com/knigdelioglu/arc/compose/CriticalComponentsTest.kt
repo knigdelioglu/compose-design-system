@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -28,6 +29,7 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.withKeyDown
@@ -41,6 +43,7 @@ import com.knigdelioglu.arc.compose.controls.ArcContextAction
 import com.knigdelioglu.arc.compose.controls.ArcContextMenu
 import com.knigdelioglu.arc.compose.controls.ArcDateRangePicker
 import com.knigdelioglu.arc.compose.controls.ArcHoldToConfirm
+import com.knigdelioglu.arc.compose.controls.ArcConfirmMorph
 import com.knigdelioglu.arc.compose.controls.ArcMorphSelect
 import com.knigdelioglu.arc.compose.controls.ArcMultiSelect
 import com.knigdelioglu.arc.compose.controls.ArcRadioCards
@@ -51,6 +54,11 @@ import com.knigdelioglu.arc.compose.controls.ArcSegmentedControl
 import com.knigdelioglu.arc.compose.controls.ArcShortcutRecorder
 import com.knigdelioglu.arc.compose.controls.ArcSwitch
 import com.knigdelioglu.arc.compose.controls.ArcTimePicker
+import com.knigdelioglu.arc.compose.controls.ArcColorPicker
+import com.knigdelioglu.arc.compose.controls.ArcMoneyInput
+import com.knigdelioglu.arc.compose.navigation.ArcCarousel
+import com.knigdelioglu.arc.compose.datavis.ArcDonutChart
+import com.knigdelioglu.arc.compose.datavis.ArcDonutSegment
 import com.knigdelioglu.arc.compose.foundation.ArcTheme
 import com.knigdelioglu.arc.compose.navigation.ArcCardStack
 import com.knigdelioglu.arc.compose.navigation.ArcResizablePanels
@@ -59,6 +67,7 @@ import com.knigdelioglu.arc.compose.navigation.ArcCommandPalette
 import com.knigdelioglu.arc.compose.datavis.ArcSortableDataTable
 import com.knigdelioglu.arc.compose.datavis.ArcTableColumn
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.activity.ComponentActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -686,4 +695,184 @@ class CriticalComponentsTest {
         compose.waitForIdle()
         compose.runOnIdle { assertEquals("top", dismissed) }
     }
+    @Test
+    fun malformedCustomSignatureExportsDoNotContainNonFiniteCoordinates() {
+        val signature = ArcSignature(
+            strokes = listOf(
+                com.knigdelioglu.arc.compose.controls.ArcSignatureStroke(
+                    points = listOf(
+                        com.knigdelioglu.arc.compose.controls.ArcSignaturePoint(
+                            Float.NaN, Float.POSITIVE_INFINITY, pressure = Float.NaN
+                        ),
+                        com.knigdelioglu.arc.compose.controls.ArcSignaturePoint(
+                            0.5f, 0.75f, pressure = Float.NEGATIVE_INFINITY
+                        )
+                    ),
+                    color = Color.Blue,
+                    widthPx = 8f
+                )
+            ),
+            canvasWidthPx = 200,
+            canvasHeightPx = 200
+        )
+        val svg = signature.toSvg()
+        assertTrue(!svg.contains("NaN"))
+        assertTrue(!svg.contains("Infinity"))
+        assertTrue(signature.toPngBytes().isNotEmpty())
+    }
+
+    @Test
+    fun signatureSvgRetainsPressureVariationAndOpacity() {
+        val signature = ArcSignature(
+            strokes = listOf(
+                com.knigdelioglu.arc.compose.controls.ArcSignatureStroke(
+                    points = listOf(
+                        com.knigdelioglu.arc.compose.controls.ArcSignaturePoint(0f, 0f, pressure = 0.25f),
+                        com.knigdelioglu.arc.compose.controls.ArcSignaturePoint(0.5f, 0.5f, pressure = 0.25f),
+                        com.knigdelioglu.arc.compose.controls.ArcSignaturePoint(1f, 1f, pressure = 1f)
+                    ),
+                    color = Color.Red.copy(alpha = 0.5f),
+                    widthPx = 8f
+                )
+            ),
+            canvasWidthPx = 200,
+            canvasHeightPx = 200
+        )
+        val svg = signature.toSvg()
+        val paths = svg.split("<path").drop(1)
+        assertEquals(2, paths.size)
+        fun attribute(path: String, name: String): Float =
+            path.substringAfter("$name=\"").substringBefore("\"").toFloat()
+        assertEquals(2f, attribute(paths[0], "stroke-width"), 0.01f)
+        assertEquals(5f, attribute(paths[1], "stroke-width"), 0.01f)
+        assertEquals(0.5f, attribute(paths[0], "stroke-opacity"), 0.01f)
+    }
+
+    @Test
+    fun donutChartSanitizesInvalidValuesWithoutCrashingOrShowingGarbage() {
+        compose.setContent {
+            ArcTheme {
+                ArcDonutChart(
+                    listOf(
+                        ArcDonutSegment("Nan", Float.NaN, Color.Red),
+                        ArcDonutSegment("Infinite", Float.POSITIVE_INFINITY, Color.Yellow),
+                        ArcDonutSegment("Negative", -5f, Color.Blue),
+                        ArcDonutSegment("Valid", 12f, Color.Green)
+                    )
+                )
+            }
+        }
+        compose.onNodeWithText("Nan: 0").assertExists()
+        compose.onNodeWithText("Infinite: 0").assertExists()
+        compose.onNodeWithText("Negative: 0").assertExists()
+        compose.onNodeWithText("Valid: 12").assertExists()
+    }
+
+    @Test
+    fun colorPickerExposesSelectableAccessibleColorTargets() {
+        var color by mutableStateOf(Color.Red)
+        compose.setContent {
+            ArcTheme {
+                ArcColorPicker(
+                    selectedColor = color,
+                    colors = listOf(Color.Red, Color.Blue),
+                    onColorSelected = { color = it }
+                )
+            }
+        }
+        compose.onNodeWithContentDescription("Renk 2").performClick()
+        compose.runOnIdle { assertEquals(Color.Blue, color) }
+    }
+
+    @Test
+    fun invalidMoneyPasteDoesNotOverwriteTheOwnedAmount() {
+        var amount by mutableStateOf<Long?>(123450L)
+        compose.setContent {
+            ArcTheme {
+                ArcMoneyInput(
+                    valueMinorUnits = amount,
+                    onValueChange = { amount = it },
+                    label = "Amount",
+                    locale = java.util.Locale.US
+                )
+            }
+        }
+        compose.onNodeWithContentDescription("Amount").performTextReplacement("12abc34")
+        compose.runOnIdle { assertEquals(123450L, amount) }
+        compose.onNodeWithText("Enter a valid amount with up to 2 decimal places").assertExists()
+        compose.onNodeWithContentDescription("Amount").performTextReplacement("12.34")
+        compose.runOnIdle { assertEquals(1234L, amount) }
+        compose.onNodeWithText("Enter a valid amount with up to 2 decimal places").assertDoesNotExist()
+    }
+
+    @Test
+    fun carouselRestoresSelectedPageAfterSavedStateRecreation() {
+        val restorer = StateRestorationTester(compose)
+        restorer.setContent {
+            ArcTheme {
+                ArcCarousel(items = listOf("Bir", "İki", "Üç")) { Text(it) }
+            }
+        }
+        compose.onNodeWithContentDescription("Sonraki").performClick()
+        compose.onNodeWithText("İki").assertExists()
+        restorer.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("İki").assertExists()
+    }
+
+    @Test
+    fun openConfirmationSurvivesRestorationWithoutRunningTheAction() {
+        var confirmed = 0
+        val restorer = StateRestorationTester(compose)
+        restorer.setContent {
+            ArcTheme {
+                ArcConfirmMorph(prompt = "Emin misiniz?", onConfirm = { confirmed++ })
+            }
+        }
+        compose.onNodeWithText("Sil").performClick()
+        compose.onNodeWithText("Emin misiniz?").assertExists()
+        restorer.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Emin misiniz?").assertExists()
+        compose.runOnIdle { assertEquals(0, confirmed) }
+    }
+
+    @Test
+    fun resizedPanelWeightsSurviveSaveAndRestore() {
+        val restorer = StateRestorationTester(compose)
+        var weights by mutableStateOf(emptyList<Float>())
+        restorer.setContent {
+            ArcTheme {
+                ArcResizablePanels(
+                    modifier = Modifier.size(520.dp, 340.dp),
+                    firstPane = { Box(Modifier) },
+                    secondPane = { Box(Modifier) },
+                    onWeightsChanged = { weights = it }
+                )
+            }
+        }
+        compose.onRoot().performKeyInput { pressKey(Key.Tab) }
+        compose.onNodeWithContentDescription("Panel boyutlandırma")
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.waitForIdle()
+        val adjusted = weights.first()
+        assertTrue(adjusted > 0.4f)
+        restorer.emulateSavedInstanceStateRestore()
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(adjusted, weights.first(), 0.0001f) }
+    }
+
+    @Test
+    fun carouselNavigationRemainsFunctionalWithChangedItemCount() {
+        var items by mutableStateOf(listOf("Bir", "İki", "Üç"))
+        compose.setContent {
+            ArcTheme {
+                ArcCarousel(items = items) { Text(it) }
+            }
+        }
+        compose.onNodeWithContentDescription("Sonraki").performClick()
+        compose.onNodeWithContentDescription("Sonraki").performClick()
+        compose.onNodeWithText("Üç").assertExists()
+        compose.runOnIdle { items = listOf("Bir") }
+        compose.onNodeWithText("Bir").assertExists()
+    }
+
 }

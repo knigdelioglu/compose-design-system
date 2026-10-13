@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -215,14 +217,17 @@ fun ArcFileUpload(
                 Text(fileName, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = ArcTheme.colors.foreground)
                 Text(fileSizeString, fontSize = 12.sp, color = ArcTheme.colors.textMuted)
             }
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Kaldır",
-                tint = ArcTheme.colors.textMuted,
-                modifier = Modifier
-                    .size(18.dp)
-                    .clickable { onClear() }
-            )
+            IconButton(
+                onClick = onClear,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Dosyayı kaldır",
+                    tint = ArcTheme.colors.textMuted,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }
@@ -239,7 +244,7 @@ fun ArcImageCompare(
     beforeLabel: String = "Önce",
     afterLabel: String = "Sonra"
 ) {
-    var splitFraction by remember { mutableFloatStateOf(0.5f) }
+    var splitFraction by rememberSaveable { mutableFloatStateOf(0.5f) }
     val density = LocalDensity.current
 
     Surface(

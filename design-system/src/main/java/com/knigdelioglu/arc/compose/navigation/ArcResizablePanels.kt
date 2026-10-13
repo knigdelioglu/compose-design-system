@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -77,8 +79,25 @@ fun ArcResizablePanels(
         val defaults = if (paneCount == 2 && initialWeights.size != 2) listOf(0.4f, 0.6f) else initialWeights
         normalizePanelWeights(defaults, paneCount, minimums, maximums)
     }
-    var weights by remember(paneCount, resetWeights) { mutableStateOf(resetWeights) }
-    var savedWidths by remember(paneCount) { mutableStateOf(emptyMap<Int, Float>()) }
+    var weights by rememberSaveable(
+        paneCount,
+        resetWeights,
+        stateSaver = listSaver(
+            save = { it.toList() },
+            restore = { it.toList() }
+        )
+    ) { mutableStateOf(resetWeights) }
+    var savedWidths by rememberSaveable(
+        paneCount,
+        stateSaver = listSaver(
+            save = { widths -> (0 until paneCount).map { widths[it] ?: -1f } },
+            restore = { values ->
+                values.mapIndexedNotNull { index, value ->
+                    if (value > 0f && value.isFinite()) index to value else null
+                }.toMap()
+            }
+        )
+    ) { mutableStateOf(emptyMap<Int, Float>()) }
     LaunchedEffect(weights) { onWeightsChanged?.invoke(weights) }
 
     fun resizeDivider(index: Int, deltaRatio: Float) {

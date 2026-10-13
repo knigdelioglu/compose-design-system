@@ -118,7 +118,13 @@ fun ArcDonutChart(
     centerTitle: String = "Toplam",
     centerSubtitle: String = ""
 ) {
-    val total = (segments.sumOf { it.value.toDouble() }).toFloat().coerceAtLeast(1f)
+    // Do not let negative, NaN, infinite or overflowing totals reach drawArc.
+    // Use Double for accumulation because the sum of finite Float values can overflow Float.
+    val safeSegments = segments.map { segment ->
+        segment.copy(value = segment.value.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f)
+    }
+    // Fractions such as 0.2 + 0.3 must fill the full 360°, not only part of the ring.
+    val total = safeSegments.sumOf { it.value.toDouble() }.takeIf { it > 0.0 } ?: 1.0
     val colors = ArcTheme.colors
 
     ArcCard(modifier = modifier) {
@@ -134,8 +140,8 @@ fun ArcDonutChart(
                     val topLeft = Offset((size.width - diameter) / 2, (size.height - diameter) / 2)
                     val arcSize = Size(diameter, diameter)
 
-                    segments.forEach { seg ->
-                        val sweep = (seg.value / total) * 360f
+                    safeSegments.forEach { seg ->
+                        val sweep = (seg.value.toDouble() / total * 360.0).toFloat()
                         drawArc(
                             color = seg.color,
                             startAngle = startAngle,
@@ -155,7 +161,7 @@ fun ArcDonutChart(
             }
             Spacer(Modifier.width(20.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                segments.forEach { seg ->
+                safeSegments.forEach { seg ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(modifier = Modifier.size(10.dp), shape = CircleShape, color = seg.color) {}
                         Spacer(Modifier.width(8.dp))
@@ -240,8 +246,10 @@ fun ArcSparkline(
     val safePoints = points.filter(Float::isFinite)
     if (safePoints.size < 2) return
 
-    val min = safePoints.minOrNull() ?: 0f
-    val max = (safePoints.maxOrNull() ?: 1f).coerceAtLeast(min + 1f)
+    // Do subtraction in Double: finite Float extrema may overflow when subtracted.
+    val min = (safePoints.minOrNull() ?: 0f).toDouble()
+    val max = (safePoints.maxOrNull() ?: 1f).toDouble()
+    val range = (max - min).takeIf { it > 0.0 } ?: 1.0
 
     Canvas(modifier = modifier.height(36.dp).width(100.dp)) {
         val width = size.width
@@ -251,7 +259,8 @@ fun ArcSparkline(
         val path = Path()
         safePoints.forEachIndexed { i, p ->
             val x = i * stepX
-            val y = height - (((p - min) / (max - min)) * height)
+            val normalized = ((p.toDouble() - min) / range).coerceIn(0.0, 1.0)
+            val y = (height.toDouble() * (1.0 - normalized)).toFloat()
             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
         drawPath(path = path, color = lineColor, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))

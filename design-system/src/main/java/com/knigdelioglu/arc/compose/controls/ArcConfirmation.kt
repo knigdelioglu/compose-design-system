@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,7 +73,7 @@ fun ArcHoldToConfirm(
     val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
-    var isConfirmed by remember { mutableStateOf(false) }
+    var isConfirmed by rememberSaveable { mutableStateOf(false) }
     var isHolding by remember { mutableStateOf(false) }
     var holdJob by remember { mutableStateOf<Job?>(null) }
     val motion = ArcMotion.current
@@ -217,7 +218,7 @@ fun ArcConfirmMorph(
     cancelLabel: String = "Vazgeç",
     variant: ArcButtonVariant = ArcButtonVariant.Danger
 ) {
-    var isConfirming by remember { mutableStateOf(false) }
+    var isConfirming by rememberSaveable { mutableStateOf(false) }
 
     Box(modifier = modifier.animateContentSize(animationSpec = ArcMotion.current.fastTween())) {
         if (!isConfirming) {

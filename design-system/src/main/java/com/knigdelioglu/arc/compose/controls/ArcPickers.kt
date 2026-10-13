@@ -3,6 +3,8 @@ package com.knigdelioglu.arc.compose.controls
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,11 +47,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -71,10 +78,14 @@ fun ArcCalendar(
 ) {
     val colors = ArcTheme.colors
     val monthFormat = remember { DateTimeFormatter.ofPattern("LLLL yyyy", Locale.forLanguageTag("tr-TR")) }
-    var visibleMonth by remember(monthName) {
-        mutableStateOf(runCatching { YearMonth.parse(monthName, monthFormat) }.getOrElse { YearMonth.now() })
+    val initialMonth = remember(monthName) {
+        runCatching { YearMonth.parse(monthName, monthFormat) }.getOrElse { YearMonth.now() }
     }
-    var selectedMonth by remember(monthName) { mutableStateOf(visibleMonth) }
+    // Save ISO month strings because YearMonth itself cannot be saved in a Bundle.
+    var visibleMonthIso by rememberSaveable(monthName) { mutableStateOf(initialMonth.toString()) }
+    var selectedMonthIso by rememberSaveable(monthName) { mutableStateOf(visibleMonthIso) }
+    val visibleMonth = YearMonth.parse(visibleMonthIso)
+    val selectedMonth = YearMonth.parse(selectedMonthIso)
     val calendarDays = visibleMonth.lengthOfMonth()
     val calendarOffset = visibleMonth.atDay(1).dayOfWeek.value - 1 // Monday = 0
     val daysOfWeek = listOf("Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz")
@@ -93,10 +104,10 @@ fun ArcCalendar(
             ) {
                 Text(visibleMonth.format(monthFormat), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
                 Row {
-                    IconButton(onClick = { visibleMonth = visibleMonth.minusMonths(1) }, modifier = Modifier.size(32.dp)) {
+                    IconButton(onClick = { visibleMonthIso = visibleMonth.minusMonths(1).toString() }, modifier = Modifier.size(48.dp)) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki Ay", tint = colors.textSecondary)
                     }
-                    IconButton(onClick = { visibleMonth = visibleMonth.plusMonths(1) }, modifier = Modifier.size(32.dp)) {
+                    IconButton(onClick = { visibleMonthIso = visibleMonth.plusMonths(1).toString() }, modifier = Modifier.size(48.dp)) {
                         Icon(Icons.Default.ChevronRight, contentDescription = "Sonraki Ay", tint = colors.textSecondary)
                     }
                 }
@@ -137,7 +148,7 @@ fun ArcCalendar(
                                 .size(36.dp)
                                 .clip(CircleShape)
                                 .clickable {
-                                    selectedMonth = visibleMonth
+                                    selectedMonthIso = visibleMonthIso
                                     onSelectDay(dayNumber)
                                     onSelectDate(visibleMonth.atDay(dayNumber).toString())
                                 },
@@ -370,18 +381,30 @@ fun ArcColorPicker(
         Color(0xFF06B6D4), Color(0xFF6B7280)
     )
 ) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        colors.forEach { color ->
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        colors.forEachIndexed { index, color ->
             val isSelected = color == selectedColor
-            Surface(
+            Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
-                    .clickable { onColorSelected(color) },
-                shape = CircleShape,
-                color = color,
-                border = if (isSelected) BorderStroke(3.dp, ArcTheme.colors.foreground) else null
-            ) {}
+                    .clickable(role = Role.RadioButton) { onColorSelected(color) }
+                    .semantics {
+                        contentDescription = "Renk ${index + 1}"
+                        selected = isSelected
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Surface(
+                    modifier = Modifier.size(28.dp),
+                    shape = CircleShape,
+                    color = color,
+                    border = if (isSelected) BorderStroke(3.dp, ArcTheme.colors.foreground) else null
+                ) {}
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,15 +55,34 @@ object ArcMoneyInputRules {
         val symbols = DecimalFormatSymbols.getInstance(locale)
         val decimal = symbols.decimalSeparator
         val grouping = symbols.groupingSeparator
+        // Currency signs and surrounding spaces are allowed only outside the number.
+        // Never concatenate digits separated by an unsupported currency sign or whitespace.
+        fun isCurrencySymbol(char: Char): Boolean =
+            Character.getType(char) == Character.CURRENCY_SYMBOL.toInt()
+        val trimmed = input.trim()
+        val number = trimmed.trimStart { it.isWhitespace() || isCurrencySymbol(it) }
+            .trimEnd { it.isWhitespace() || isCurrencySymbol(it) }
+        if (number.isEmpty()) return null
+        val integerPart = number.substringBefore(decimal)
+        if (grouping != decimal && grouping in integerPart) {
+            val groups = integerPart.split(grouping)
+            if (groups.first().length !in 1..3 ||
+                groups.drop(1).any { it.length != 3 } ||
+                groups.any { group -> group.any { it !in '0'..'9' } }
+            ) return null
+        }
         val normalized = buildString {
             var decimalSeen = false
-            input.forEach { char ->
+            number.forEach { char ->
                 when {
                     char in '0'..'9' -> append(char)
-                    char == decimal && !decimalSeen -> { append('.'); decimalSeen = true }
-                    char == grouping || char.isWhitespace() || char == '\u00A0' -> Unit
-                    char == '-' || char == '+' -> return null
-                    else -> Unit // Currency symbols are common when pasting a formatted amount.
+                    char == decimal -> {
+                        if (decimalSeen) return null
+                        append('.')
+                        decimalSeen = true
+                    }
+                    char == grouping && !decimalSeen -> Unit
+                    else -> return null // Invalid separators, signs, symbols or embedded spaces.
                 }
             }
         }
@@ -109,14 +129,14 @@ fun ArcMoneyInput(
 ) {
     val colors = ArcTheme.colors
     var focused by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
-    var precisionError by remember { mutableStateOf(false) }
-    LaunchedEffect(valueMinorUnits, currencyCode) {
+    var text by rememberSaveable { mutableStateOf("") }
+    var precisionError by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(valueMinorUnits, currencyCode, locale) {
         if (!focused) text = valueMinorUnits?.let { ArcMoneyInputRules.formatEditable(it, currencyCode, locale) }.orEmpty()
     }
     val fractionDigits = ArcMoneyInputRules.fractionDigits(currencyCode)
     val symbols = remember(locale) { DecimalFormatSymbols.getInstance(locale) }
-    val displayedError = errorMessage ?: if (precisionError) "Use up to $fractionDigits decimal places" else null
+    val displayedError = errorMessage ?: if (precisionError) "Enter a valid amount with up to $fractionDigits decimal places" else null
 
     Column(modifier = modifier) {
         Text(label, color = colors.textSecondary, fontSize = 13.sp)
@@ -140,18 +160,19 @@ fun ArcMoneyInput(
                 BasicTextField(
                     value = text,
                     onValueChange = { typed ->
-                        val filtered = typed.filter { it in '0'..'9' || it == symbols.decimalSeparator || it == symbols.groupingSeparator }
-                        text = filtered
-                        val parsed = ArcMoneyInputRules.parseMinorUnits(filtered, fractionDigits, locale)
-                        precisionError = filtered.isNotEmpty() && filtered != symbols.decimalSeparator.toString() && parsed == null
-                        if (filtered.isEmpty()) onValueChange(null) else if (parsed != null) onValueChange(parsed)
+                        text = typed
+                        val parsed = ArcMoneyInputRules.parseMinorUnits(typed, fractionDigits, locale)
+                        precisionError = typed.isNotBlank() && typed != symbols.decimalSeparator.toString() && parsed == null
+                        if (typed.isEmpty()) onValueChange(null) else if (parsed != null) onValueChange(parsed)
                     },
-                    modifier = Modifier.weight(1f).onFocusChanged {
-                        focused = it.isFocused
-                        if (!it.isFocused) {
-                            text = valueMinorUnits?.let { amount -> ArcMoneyInputRules.formatEditable(amount, currencyCode, locale) }.orEmpty()
-                        } else {
-                            text = valueMinorUnits?.let { amount -> ArcMoneyInputRules.formatEditable(amount, currencyCode, locale) }.orEmpty()
+                    modifier = Modifier.weight(1f).onFocusChanged { focusState ->
+                        val lostFocus = focused && !focusState.isFocused
+                        focused = focusState.isFocused
+                        if (lostFocus) {
+                            text = valueMinorUnits?.let { amount ->
+                                ArcMoneyInputRules.formatEditable(amount, currencyCode, locale)
+                            }.orEmpty()
+                            precisionError = false
                         }
                     }
                         .semantics {
