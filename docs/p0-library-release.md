@@ -24,7 +24,7 @@ Gradle's `api` dependencies export Compose types referenced by the public API.
 
 ## Immutable releases
 
-After P0 source CI and real consumer acceptance tests pass, create a **new** annotated release tag such as `v0.1.0`. Tag pushes execute `publish-library.yml`; the workflow verifies release compilation, JVM tests, lint, API checks and a Maven consumer smoke build before publishing the AAR, POM, Gradle module metadata and sources archive into a separate `maven-repository` branch.
+The immutable coordinate is declared in `.github/compose-library.version` (initial value `0.1.0`). A protected `main` push that changes this file triggers `publish-library.yml`; a new annotated tag with matching semantic version is an alternative trigger. The workflow stages the release AAR, POM, module metadata and sources archive, then runs Plan's compact/portrait/landscape and Puanla's tablet *connected emulator suites against that exact AAR*. Only if all suites succeed does it write to `maven-repository`. A failed consumer suite leaves the public Maven repository untouched.
 
 A public, credential-free Maven repository is then available at:
 
@@ -38,7 +38,7 @@ Before tagging, test the locally staged Maven repository in both consumers with 
 
 ## Consumer migration and rollback
 
-First run Puanla and Plan with opt-in `-PcomposePublishedVersion=<released-version>` and execute both apps' unit and UI tests. Only after validation, make the versioned artifact the default dependency and remove old source-path dependencies. Keep the original pinned SHA and workflow history available for immediate rollback. Product-specific UI adapters and data layers must remain unchanged.
+The PR and release workflows use `.github/workflows/consumer-compat.yml`, which checks out stable Plan/Puanla `main` rather than short-lived `codex/*` branches, and runs Android emulator UI tests instead of just compiling androidTest APKs. Run the consumers with opt-in `-PcomposePublishedVersion=<released-version>` before switching the default dependency. Only after the first release is publicly addressable and independently accepted should either app switch defaults and remove old source-path dependencies. Keep the original pinned SHA and workflow history available for immediate rollback. Product-specific UI adapters and data layers must remain unchanged.
 
 ## Quality gates
 
@@ -46,3 +46,10 @@ First run Puanla and Plan with opt-in `-PcomposePublishedVersion=<released-versi
 - Puanla and Plan compile, run critical UI tests, preserve app data and retain their current UX contracts.
 - Consumer migration does not require synchronized Kotlin/AGP upgrades; validate both toolchains independently.
 - Failed consumer checks leave current app dependencies and releases untouched.
+
+## Release safety
+
+- Never retag, overwrite or re-publish an existing Maven version. The GitHub API coordinate check rejects already published files, the publication concurrency group serializes writers, and failed checks never reach the publishing job.
+- An unmerged PR does not change the public Maven branch. Update Plan and Puanla defaults only after the actual release artefact exists.
+- Protect the `maven-repository` branch and `v*` tags against manual force pushes or rewrites; repository settings are separate from code and have not been changed by this PR.
+- Android app release version codes and end-user APK distribution are independent of library releases.
