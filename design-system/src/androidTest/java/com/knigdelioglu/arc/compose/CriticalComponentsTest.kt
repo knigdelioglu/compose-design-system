@@ -709,9 +709,9 @@ class CriticalComponentsTest {
             canvasHeightPx = 200
         )
         val svg = signature.toSvg()
-        assertTrue(svg.contains("stroke-width=\\"2.0\\""))
-        assertTrue(svg.contains("stroke-width=\\"5.0\\""))
-        assertTrue(svg.contains("stroke-opacity=\\"0.5\\""))
+        assertTrue(svg.contains("stroke-width=\"2.0\""))
+        assertTrue(svg.contains("stroke-width=\"5.0\""))
+        assertTrue(svg.contains("stroke-opacity=\"0.5\""))
     }
 
     @Test
