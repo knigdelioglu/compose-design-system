@@ -7,6 +7,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import java.io.ByteArrayOutputStream
 
+// Exports also accept caller-created signatures, not only normalized stylus input.
+private fun Float.safeSignatureCoordinate(): Float =
+    takeIf(Float::isFinite)?.coerceIn(0f, 1f) ?: 0f
+
+private fun Float.safeSignaturePressure(): Float =
+    takeIf(Float::isFinite)?.coerceIn(0.1f, 1f) ?: 0.5f
+
+private fun Float.safeSignatureWidth(): Float =
+    takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f
+
 /** Normalized point data keeps a signature independent of the size used to draw it. */
 data class ArcSignaturePoint(
     val x: Float,
@@ -39,20 +49,20 @@ data class ArcSignature(
             if (points.isEmpty()) return@joinToString ""
             val color = "#${stroke.color.toArgb().toUInt().toString(16).padStart(8, '0').takeLast(6)}"
             val opacity = stroke.color.alpha.coerceIn(0f, 1f)
-            val brushWidth = stroke.widthPx.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f
+            val brushWidth = stroke.widthPx.safeSignatureWidth()
             if (points.size == 1) {
                 val point = points.first()
-                val radius = brushWidth * scale * point.pressure.coerceIn(0.1f, 1f) / 2f
-                "<circle cx=\"${point.x.coerceIn(0f, 1f) * safeWidth}\" cy=\"${point.y.coerceIn(0f, 1f) * safeHeight}\" r=\"$radius\" fill=\"$color\" fill-opacity=\"$opacity\"/>"
+                val radius = brushWidth * scale * point.pressure.safeSignaturePressure() / 2f
+                "<circle cx=\"${point.x.safeSignatureCoordinate() * safeWidth}\" cy=\"${point.y.safeSignatureCoordinate() * safeHeight}\" r=\"$radius\" fill=\"$color\" fill-opacity=\"$opacity\"/>"
             } else {
                 // One segment per pair reproduces the pressure-dependent widths used by PNG.
                 points.zipWithNext().joinToString("") { (startPoint, endPoint) ->
                     val widthPx = brushWidth * scale *
                         ((startPoint.pressure + endPoint.pressure) / 2f).coerceIn(0.1f, 1f)
-                    val x1 = startPoint.x.coerceIn(0f, 1f) * safeWidth
-                    val y1 = startPoint.y.coerceIn(0f, 1f) * safeHeight
-                    val x2 = endPoint.x.coerceIn(0f, 1f) * safeWidth
-                    val y2 = endPoint.y.coerceIn(0f, 1f) * safeHeight
+                    val x1 = startPoint.x.safeSignatureCoordinate() * safeWidth
+                    val y1 = startPoint.y.safeSignatureCoordinate() * safeHeight
+                    val x2 = endPoint.x.safeSignatureCoordinate() * safeWidth
+                    val y2 = endPoint.y.safeSignatureCoordinate() * safeHeight
                     "<path d=\"M$x1,$y1 L$x2,$y2\" fill=\"none\" stroke=\"$color\" stroke-opacity=\"$opacity\" stroke-width=\"$widthPx\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
                 }
             }
@@ -85,19 +95,19 @@ data class ArcSignature(
                 paint.style = Paint.Style.FILL
                 paint.color = stroke.color.toArgb()
                 canvas.drawCircle(
-                    points[0].x.coerceIn(0f, 1f) * safeWidth,
-                    points[0].y.coerceIn(0f, 1f) * safeHeight,
-                    stroke.widthPx * scale * points[0].pressure.coerceIn(0.1f, 1f) / 2f,
+                    points[0].x.safeSignatureCoordinate() * safeWidth,
+                    points[0].y.safeSignatureCoordinate() * safeHeight,
+                    stroke.widthPx.safeSignatureWidth() * scale * points[0].pressure.safeSignaturePressure() / 2f,
                     paint
                 )
             } else {
                 points.zipWithNext().forEach { (start, end) ->
                     paint.strokeWidth = stroke.widthPx * scale * ((start.pressure + end.pressure) / 2f).coerceIn(0.1f, 1f)
                     canvas.drawLine(
-                        start.x.coerceIn(0f, 1f) * safeWidth,
-                        start.y.coerceIn(0f, 1f) * safeHeight,
-                        end.x.coerceIn(0f, 1f) * safeWidth,
-                        end.y.coerceIn(0f, 1f) * safeHeight,
+                        start.x.safeSignatureCoordinate() * safeWidth,
+                        start.y.safeSignatureCoordinate() * safeHeight,
+                        end.x.safeSignatureCoordinate() * safeWidth,
+                        end.y.safeSignatureCoordinate() * safeHeight,
                         paint
                     )
                 }
