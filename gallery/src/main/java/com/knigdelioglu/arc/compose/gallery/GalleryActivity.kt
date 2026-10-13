@@ -2,6 +2,7 @@ package com.knigdelioglu.arc.compose.gallery
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -116,6 +117,8 @@ private enum class GalleryPage(val title: String) {
 
 class GalleryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Draw the theme background behind system bars; the Gallery content applies safe insets.
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(ComposeView(this).apply { setContent { ComponentGallery() } })
     }
