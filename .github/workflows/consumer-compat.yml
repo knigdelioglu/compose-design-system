@@ -14,13 +14,9 @@ permissions:
 
 jobs:
   plan-android-ui:
-    name: Plan binary UI (${{ matrix.display }})
+    name: Plan binary UI (compact, portrait, landscape)
     runs-on: ubuntu-latest
     timeout-minutes: 65
-    strategy:
-      fail-fast: false
-      matrix:
-        display: [compact, tablet-portrait, tablet-landscape]
     steps:
       - name: Checkout stable Plan main
         uses: actions/checkout@v4
@@ -63,7 +59,11 @@ jobs:
           profile: pixel_5
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: cd plan && bash .github/scripts/android-ui-display.sh ${{ matrix.display }}
+          script: |
+            cd plan
+            bash .github/scripts/android-ui-display.sh compact
+            bash .github/scripts/android-ui-display.sh tablet-portrait
+            bash .github/scripts/android-ui-display.sh tablet-landscape
 
   puanla-android-ui:
     name: Puanla binary tablet UI
