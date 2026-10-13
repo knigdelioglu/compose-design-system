@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -51,6 +52,10 @@ import com.knigdelioglu.arc.compose.controls.ArcSegmentedControl
 import com.knigdelioglu.arc.compose.controls.ArcShortcutRecorder
 import com.knigdelioglu.arc.compose.controls.ArcSwitch
 import com.knigdelioglu.arc.compose.controls.ArcTimePicker
+import com.knigdelioglu.arc.compose.controls.ArcColorPicker
+import com.knigdelioglu.arc.compose.navigation.ArcCarousel
+import com.knigdelioglu.arc.compose.datavis.ArcDonutChart
+import com.knigdelioglu.arc.compose.datavis.ArcDonutSegment
 import com.knigdelioglu.arc.compose.foundation.ArcTheme
 import com.knigdelioglu.arc.compose.navigation.ArcCardStack
 import com.knigdelioglu.arc.compose.navigation.ArcResizablePanels
@@ -686,4 +691,55 @@ class CriticalComponentsTest {
         compose.waitForIdle()
         compose.runOnIdle { assertEquals("top", dismissed) }
     }
+    @Test
+    fun donutChartSanitizesInvalidValuesWithoutCrashingOrShowingGarbage() {
+        compose.setContent {
+            ArcTheme {
+                ArcDonutChart(
+                    listOf(
+                        ArcDonutSegment("Nan", Float.NaN, Color.Red),
+                        ArcDonutSegment("Infinite", Float.POSITIVE_INFINITY, Color.Yellow),
+                        ArcDonutSegment("Negative", -5f, Color.Blue),
+                        ArcDonutSegment("Valid", 12f, Color.Green)
+                    )
+                )
+            }
+        }
+        compose.onNodeWithText("Nan: 0").assertExists()
+        compose.onNodeWithText("Infinite: 0").assertExists()
+        compose.onNodeWithText("Negative: 0").assertExists()
+        compose.onNodeWithText("Valid: 12").assertExists()
+    }
+
+    @Test
+    fun colorPickerExposesSelectableAccessibleColorTargets() {
+        var color by mutableStateOf(Color.Red)
+        compose.setContent {
+            ArcTheme {
+                ArcColorPicker(
+                    selectedColor = color,
+                    colors = listOf(Color.Red, Color.Blue),
+                    onColorSelected = { color = it }
+                )
+            }
+        }
+        compose.onNodeWithContentDescription("Renk 2").performClick()
+        compose.runOnIdle { assertEquals(Color.Blue, color) }
+    }
+
+    @Test
+    fun carouselNavigationRemainsFunctionalWithChangedItemCount() {
+        var items by mutableStateOf(listOf("Bir", "İki", "Üç"))
+        compose.setContent {
+            ArcTheme {
+                ArcCarousel(items = items) { Text(it) }
+            }
+        }
+        compose.onNodeWithContentDescription("Sonraki").performClick()
+        compose.onNodeWithContentDescription("Sonraki").performClick()
+        compose.onNodeWithText("Üç").assertExists()
+        compose.runOnIdle { items = listOf("Bir") }
+        compose.onNodeWithText("Bir").assertExists()
+    }
+
 }
