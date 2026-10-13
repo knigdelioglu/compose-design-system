@@ -63,13 +63,7 @@ jobs:
           profile: pixel_5
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: |
-            cd compose-design-system
-            ./gradlew :design-system:connectedDebugAndroidTest --no-daemon
-            cd ../plan
-            bash .github/scripts/android-ui-display.sh compact
-            bash .github/scripts/android-ui-display.sh tablet-portrait
-            bash .github/scripts/android-ui-display.sh tablet-landscape
+          script: cd compose-design-system && ./gradlew :design-system:connectedDebugAndroidTest --no-daemon && cd ../plan && bash .github/scripts/android-ui-display.sh compact && bash .github/scripts/android-ui-display.sh tablet-portrait && bash .github/scripts/android-ui-display.sh tablet-landscape
 
   puanla-android-ui:
     name: Puanla binary tablet UI
