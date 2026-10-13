@@ -29,6 +29,14 @@ jobs:
         run: ./gradlew :design-system:lintDebug :gallery:lintDebug
       - name: Check Kotlin public API compatibility
         run: ./gradlew :design-system:apiCheck
+      - name: Publish release AAR to isolated Maven staging repository
+        run: ./gradlew :design-system:publishReleasePublicationToStagingRepository
+      - name: Validate Maven artifact and metadata exist
+        run: |
+          test -f build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT/compose-design-system-0.1.0-SNAPSHOT.aar
+          test -f build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT/compose-design-system-0.1.0-SNAPSHOT.pom
+      - name: Compile gallery against published Maven artifact (not a project dependency)
+        run: ./gradlew :gallery:assembleDebug -PcomposeSmokePublished=true
 
   compose-ui-tests:
     runs-on: ubuntu-latest
