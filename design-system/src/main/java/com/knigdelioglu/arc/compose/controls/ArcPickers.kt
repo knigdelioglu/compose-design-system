@@ -78,10 +78,14 @@ fun ArcCalendar(
 ) {
     val colors = ArcTheme.colors
     val monthFormat = remember { DateTimeFormatter.ofPattern("LLLL yyyy", Locale.forLanguageTag("tr-TR")) }
-    var visibleMonth by remember(monthName) {
-        mutableStateOf(runCatching { YearMonth.parse(monthName, monthFormat) }.getOrElse { YearMonth.now() })
+    val initialMonth = remember(monthName) {
+        runCatching { YearMonth.parse(monthName, monthFormat) }.getOrElse { YearMonth.now() }
     }
-    var selectedMonth by remember(monthName) { mutableStateOf(visibleMonth) }
+    // Save ISO month strings because YearMonth itself cannot be saved in a Bundle.
+    var visibleMonthIso by rememberSaveable(monthName) { mutableStateOf(initialMonth.toString()) }
+    var selectedMonthIso by rememberSaveable(monthName) { mutableStateOf(visibleMonthIso) }
+    val visibleMonth = YearMonth.parse(visibleMonthIso)
+    val selectedMonth = YearMonth.parse(selectedMonthIso)
     val calendarDays = visibleMonth.lengthOfMonth()
     val calendarOffset = visibleMonth.atDay(1).dayOfWeek.value - 1 // Monday = 0
     val daysOfWeek = listOf("Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz")
@@ -100,10 +104,10 @@ fun ArcCalendar(
             ) {
                 Text(visibleMonth.format(monthFormat), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = colors.foreground)
                 Row {
-                    IconButton(onClick = { visibleMonth = visibleMonth.minusMonths(1) }, modifier = Modifier.size(48.dp)) {
+                    IconButton(onClick = { visibleMonthIso = visibleMonth.minusMonths(1).toString() }, modifier = Modifier.size(48.dp)) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki Ay", tint = colors.textSecondary)
                     }
-                    IconButton(onClick = { visibleMonth = visibleMonth.plusMonths(1) }, modifier = Modifier.size(48.dp)) {
+                    IconButton(onClick = { visibleMonthIso = visibleMonth.plusMonths(1).toString() }, modifier = Modifier.size(48.dp)) {
                         Icon(Icons.Default.ChevronRight, contentDescription = "Sonraki Ay", tint = colors.textSecondary)
                     }
                 }
@@ -144,7 +148,7 @@ fun ArcCalendar(
                                 .size(36.dp)
                                 .clip(CircleShape)
                                 .clickable {
-                                    selectedMonth = visibleMonth
+                                    selectedMonthIso = visibleMonthIso
                                     onSelectDay(dayNumber)
                                     onSelectDate(visibleMonth.atDay(dayNumber).toString())
                                 },
