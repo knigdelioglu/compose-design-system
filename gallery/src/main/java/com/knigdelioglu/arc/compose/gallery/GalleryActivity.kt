@@ -4,12 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,15 +30,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.knigdelioglu.arc.compose.advanced.ArcAdvancedItem
@@ -117,15 +123,25 @@ class GalleryActivity : ComponentActivity() {
 
 @Composable
 private fun ComponentGallery() {
-    var dark by remember { mutableStateOf(false) }
+    var dark by rememberSaveable { mutableStateOf(isSystemInDarkTheme()) }
     var accent by remember { mutableStateOf(ArcAccent.Violet) }
     var reducedMotion by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf(GalleryPage.Existing) }
 
+    val activity = LocalContext.current as? ComponentActivity
+    SideEffect {
+        activity?.window?.let { window ->
+            WindowCompat.getInsetsController(window, window.decorView).apply {
+                isAppearanceLightStatusBars = !dark
+                isAppearanceLightNavigationBars = !dark
+            }
+        }
+    }
+
     ArcTheme(darkTheme = dark, accent = accent, reducedMotion = reducedMotion) {
         Surface(Modifier.fillMaxSize(), color = ArcTheme.colors.background) {
             Column(
-                Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp),
+                Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
