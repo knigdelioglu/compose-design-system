@@ -246,8 +246,10 @@ fun ArcSparkline(
     val safePoints = points.filter(Float::isFinite)
     if (safePoints.size < 2) return
 
-    val min = safePoints.minOrNull() ?: 0f
-    val max = (safePoints.maxOrNull() ?: 1f).coerceAtLeast(min + 1f)
+    // Do subtraction in Double: finite Float extrema may overflow when subtracted.
+    val min = (safePoints.minOrNull() ?: 0f).toDouble()
+    val max = (safePoints.maxOrNull() ?: 1f).toDouble()
+    val range = (max - min).takeIf { it > 0.0 } ?: 1.0
 
     Canvas(modifier = modifier.height(36.dp).width(100.dp)) {
         val width = size.width
@@ -257,7 +259,8 @@ fun ArcSparkline(
         val path = Path()
         safePoints.forEachIndexed { i, p ->
             val x = i * stepX
-            val y = height - (((p - min) / (max - min)) * height)
+            val normalized = ((p.toDouble() - min) / range).coerceIn(0.0, 1.0)
+            val y = (height.toDouble() * (1.0 - normalized)).toFloat()
             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
         drawPath(path = path, color = lineColor, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round))
