@@ -58,7 +58,7 @@ data class ArcSignature(
                 // One segment per pair reproduces the pressure-dependent widths used by PNG.
                 points.zipWithNext().joinToString("") { (startPoint, endPoint) ->
                     val widthPx = brushWidth * scale *
-                        ((startPoint.pressure + endPoint.pressure) / 2f).coerceIn(0.1f, 1f)
+                        ((startPoint.pressure.safeSignaturePressure() + endPoint.pressure.safeSignaturePressure()) / 2f)
                     val x1 = startPoint.x.safeSignatureCoordinate() * safeWidth
                     val y1 = startPoint.y.safeSignatureCoordinate() * safeHeight
                     val x2 = endPoint.x.safeSignatureCoordinate() * safeWidth
@@ -102,7 +102,7 @@ data class ArcSignature(
                 )
             } else {
                 points.zipWithNext().forEach { (start, end) ->
-                    paint.strokeWidth = stroke.widthPx * scale * ((start.pressure + end.pressure) / 2f).coerceIn(0.1f, 1f)
+                    paint.strokeWidth = stroke.widthPx * scale * ((start.pressure.safeSignaturePressure() + end.pressure.safeSignaturePressure()) / 2f)
                     canvas.drawLine(
                         start.x.safeSignatureCoordinate() * safeWidth,
                         start.y.safeSignatureCoordinate() * safeHeight,
