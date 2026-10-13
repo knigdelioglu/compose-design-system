@@ -80,47 +80,8 @@ jobs:
           script: ./gradlew :design-system:connectedDebugAndroidTest
 
   published-consumer-tests:
-    name: Published AAR compatibility (${{ matrix.consumer }})
-    if: github.event_name == 'pull_request'
-    needs: build-and-unit-tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 50
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - consumer: Plan
-            repo: knigdelioglu/plan
-            path: plan
-            working_directory: plan/android
-            ref: codex/p0-library-consumer-20261013
-          - consumer: Puanla
-            repo: knigdelioglu/puanla
-            path: puanla
-            working_directory: puanla
-            ref: codex/p0-library-consumer-20261013
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ matrix.repo }}
-          ref: ${{ matrix.ref }}
-          path: ${{ matrix.path }}
-          persist-credentials: false
-      - uses: actions/download-artifact@v4
-        with:
-          name: compose-p0-maven-staging
-          path: staged-maven
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: android-actions/setup-android@v3
-        with:
-          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
-      - uses: gradle/actions/setup-gradle@v4
-      - name: Build application against independent staged AAR
-        working-directory: ${{ matrix.working_directory }}
-        env:
-          ORG_GRADLE_PROJECT_composePublishedVersion: 0.1.0-SNAPSHOT
-          ORG_GRADLE_PROJECT_composePublishedRepositoryDir: ${{ github.workspace }}/staged-maven
-        run: ./gradlew :app:assembleDebug testDebugUnitTest :app:assembleDebugAndroidTest --no-daemon
+    name: Plan and Puanla binary emulator acceptance
+    needs: [build-and-unit-tests, compose-ui-tests]
+    uses: ./.github/workflows/consumer-compat.yml
+    with:
+      library_version: 0.1.0-SNAPSHOT
