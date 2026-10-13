@@ -24,6 +24,14 @@ class ArcMoneyInputRulesTest {
         assertNull(ArcMoneyInputRules.parseMinorUnits("1e3", 2, Locale.US))
         assertNull(ArcMoneyInputRules.parseMinorUnits("1,2-3", 2, Locale.US))
         assertNull(ArcMoneyInputRules.parseMinorUnits("1+2", 2, Locale.US))
+        assertNull(ArcMoneyInputRules.parseMinorUnits("12€34", 2, Locale.GERMANY))
+        assertNull(ArcMoneyInputRules.parseMinorUnits("1,2,345", 2, Locale.US))
+        assertNull(ArcMoneyInputRules.parseMinorUnits("1,23", 2, Locale.US))
+        assertNull(ArcMoneyInputRules.parseMinorUnits("12 34", 2, Locale.US))
+        assertNull(ArcMoneyInputRules.parseMinorUnits("1,234,56", 2, Locale.US))
+        assertEquals(123456789L, ArcMoneyInputRules.parseMinorUnits("1,234,567.89", 2, Locale.US))
+        assertEquals(50L, ArcMoneyInputRules.parseMinorUnits(".50", 2, Locale.US))
+
         assertNull(ArcMoneyInputRules.parseMinorUnits("999999999999999999999999", 2, Locale.US))
         // Pasted localized currency symbols remain supported.
         assertEquals(123450L, ArcMoneyInputRules.parseMinorUnits("$1,234.50", 2, Locale.US))
