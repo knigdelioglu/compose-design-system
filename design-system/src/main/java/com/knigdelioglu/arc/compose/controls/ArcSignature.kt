@@ -35,15 +35,27 @@ data class ArcSignature(
         val safeHeight = height.coerceAtLeast(1)
         val scale = minOf(safeWidth.toFloat() / canvasWidthPx.coerceAtLeast(1), safeHeight.toFloat() / canvasHeightPx.coerceAtLeast(1))
         val body = strokes.joinToString("") { stroke ->
-            if (stroke.points.isEmpty()) return@joinToString ""
-            val pathData = buildString {
-                stroke.points.forEachIndexed { index, point ->
-                    append(if (index == 0) "M" else "L")
-                    append("${point.x.coerceIn(0f, 1f) * safeWidth},${point.y.coerceIn(0f, 1f) * safeHeight} ")
+            val points = stroke.points
+            if (points.isEmpty()) return@joinToString ""
+            val color = "#${stroke.color.toArgb().toUInt().toString(16).padStart(8, '0').takeLast(6)}"
+            val opacity = stroke.color.alpha.coerceIn(0f, 1f)
+            val brushWidth = stroke.widthPx.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f
+            if (points.size == 1) {
+                val point = points.first()
+                val radius = brushWidth * scale * point.pressure.coerceIn(0.1f, 1f) / 2f
+                "<circle cx=\"${point.x.coerceIn(0f, 1f) * safeWidth}\" cy=\"${point.y.coerceIn(0f, 1f) * safeHeight}\" r=\"$radius\" fill=\"$color\" fill-opacity=\"$opacity\"/>"
+            } else {
+                // One segment per pair reproduces the pressure-dependent widths used by PNG.
+                points.zipWithNext().joinToString("") { (startPoint, endPoint) ->
+                    val widthPx = brushWidth * scale *
+                        ((startPoint.pressure + endPoint.pressure) / 2f).coerceIn(0.1f, 1f)
+                    val x1 = startPoint.x.coerceIn(0f, 1f) * safeWidth
+                    val y1 = startPoint.y.coerceIn(0f, 1f) * safeHeight
+                    val x2 = endPoint.x.coerceIn(0f, 1f) * safeWidth
+                    val y2 = endPoint.y.coerceIn(0f, 1f) * safeHeight
+                    "<path d=\"M$x1,$y1 L$x2,$y2\" fill=\"none\" stroke=\"$color\" stroke-opacity=\"$opacity\" stroke-width=\"$widthPx\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
                 }
             }
-            val pressure = stroke.points.map { it.pressure.coerceIn(0.1f, 1f) }.average().toFloat()
-            "<path d=\"$pathData\" fill=\"none\" stroke=\"#${stroke.color.toArgb().toUInt().toString(16).takeLast(6)}\" stroke-width=\"${stroke.widthPx * scale * pressure}\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
         }
         return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"$safeWidth\" height=\"$safeHeight\" viewBox=\"0 0 $safeWidth $safeHeight\">$body</svg>"
     }
