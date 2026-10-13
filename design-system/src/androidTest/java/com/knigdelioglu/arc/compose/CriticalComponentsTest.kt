@@ -64,6 +64,7 @@ import com.knigdelioglu.arc.compose.navigation.ArcCommandPalette
 import com.knigdelioglu.arc.compose.datavis.ArcSortableDataTable
 import com.knigdelioglu.arc.compose.datavis.ArcTableColumn
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.activity.ComponentActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -748,6 +749,45 @@ class CriticalComponentsTest {
         }
         compose.onNodeWithContentDescription("Renk 2").performClick()
         compose.runOnIdle { assertEquals(Color.Blue, color) }
+    }
+
+    @Test
+    fun carouselRestoresSelectedPageAfterSavedStateRecreation() {
+        val restorer = StateRestorationTester(compose)
+        restorer.setContent {
+            ArcTheme {
+                ArcCarousel(items = listOf("Bir", "İki", "Üç")) { Text(it) }
+            }
+        }
+        compose.onNodeWithContentDescription("Sonraki").performClick()
+        compose.onNodeWithText("İki").assertExists()
+        restorer.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("İki").assertExists()
+    }
+
+    @Test
+    fun resizedPanelWeightsSurviveSaveAndRestore() {
+        val restorer = StateRestorationTester(compose)
+        var weights by mutableStateOf(emptyList<Float>())
+        restorer.setContent {
+            ArcTheme {
+                ArcResizablePanels(
+                    modifier = Modifier.size(520.dp, 340.dp),
+                    firstPane = { Box(Modifier) },
+                    secondPane = { Box(Modifier) },
+                    onWeightsChanged = { weights = it }
+                )
+            }
+        }
+        compose.onRoot().performKeyInput { pressKey(Key.Tab) }
+        compose.onNodeWithContentDescription("Panel boyutlandırma")
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.waitForIdle()
+        val adjusted = weights.first()
+        assertTrue(adjusted > 0.4f)
+        restorer.emulateSavedInstanceStateRestore()
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(adjusted, weights.first(), 0.0001f) }
     }
 
     @Test
