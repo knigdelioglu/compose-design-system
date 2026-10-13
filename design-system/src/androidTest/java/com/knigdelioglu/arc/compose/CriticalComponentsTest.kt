@@ -43,6 +43,7 @@ import com.knigdelioglu.arc.compose.controls.ArcContextAction
 import com.knigdelioglu.arc.compose.controls.ArcContextMenu
 import com.knigdelioglu.arc.compose.controls.ArcDateRangePicker
 import com.knigdelioglu.arc.compose.controls.ArcHoldToConfirm
+import com.knigdelioglu.arc.compose.controls.ArcConfirmMorph
 import com.knigdelioglu.arc.compose.controls.ArcMorphSelect
 import com.knigdelioglu.arc.compose.controls.ArcMultiSelect
 import com.knigdelioglu.arc.compose.controls.ArcRadioCards
@@ -816,6 +817,22 @@ class CriticalComponentsTest {
         compose.onNodeWithText("İki").assertExists()
         restorer.emulateSavedInstanceStateRestore()
         compose.onNodeWithText("İki").assertExists()
+    }
+
+    @Test
+    fun openConfirmationSurvivesRestorationWithoutRunningTheAction() {
+        var confirmed = 0
+        val restorer = StateRestorationTester(compose)
+        restorer.setContent {
+            ArcTheme {
+                ArcConfirmMorph(prompt = "Emin misiniz?", onConfirm = { confirmed++ })
+            }
+        }
+        compose.onNodeWithText("Sil").performClick()
+        compose.onNodeWithText("Emin misiniz?").assertExists()
+        restorer.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("Emin misiniz?").assertExists()
+        compose.runOnIdle { assertEquals(0, confirmed) }
     }
 
     @Test
