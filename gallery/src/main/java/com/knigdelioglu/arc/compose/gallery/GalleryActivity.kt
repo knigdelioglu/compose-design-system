@@ -123,7 +123,8 @@ class GalleryActivity : ComponentActivity() {
 
 @Composable
 private fun ComponentGallery() {
-    var dark by rememberSaveable { mutableStateOf(isSystemInDarkTheme()) }
+    val initialDark = isSystemInDarkTheme()
+    var dark by rememberSaveable { mutableStateOf(initialDark) }
     var accent by remember { mutableStateOf(ArcAccent.Violet) }
     var reducedMotion by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf(GalleryPage.Existing) }
