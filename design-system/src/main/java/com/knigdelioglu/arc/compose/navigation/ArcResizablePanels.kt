@@ -87,7 +87,17 @@ fun ArcResizablePanels(
             restore = { it.toList() }
         )
     ) { mutableStateOf(resetWeights) }
-    var savedWidths by remember(paneCount) { mutableStateOf(emptyMap<Int, Float>()) }
+    var savedWidths by rememberSaveable(
+        paneCount,
+        stateSaver = listSaver(
+            save = { widths -> (0 until paneCount).map { widths[it] ?: -1f } },
+            restore = { values ->
+                values.mapIndexedNotNull { index, value ->
+                    if (value > 0f && value.isFinite()) index to value else null
+                }.toMap()
+            }
+        )
+    ) { mutableStateOf(emptyMap<Int, Float>()) }
     LaunchedEffect(weights) { onWeightsChanged?.invoke(weights) }
 
     fun resizeDivider(index: Int, deltaRatio: Float) {
