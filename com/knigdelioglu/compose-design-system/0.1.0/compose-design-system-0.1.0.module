@@ -1,0 +1,156 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.knigdelioglu",
+    "module": "compose-design-system",
+    "version": "0.1.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.13"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.compose",
+          "module": "compose-bom",
+          "version": {
+            "requires": "2025.10.01"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          }
+        },
+        {
+          "group": "androidx.compose.ui",
+          "module": "ui"
+        },
+        {
+          "group": "androidx.compose.foundation",
+          "module": "foundation"
+        },
+        {
+          "group": "androidx.compose.material3",
+          "module": "material3"
+        },
+        {
+          "group": "androidx.compose.animation",
+          "module": "animation"
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "compose-design-system-0.1.0.aar",
+          "url": "compose-design-system-0.1.0.aar",
+          "size": 1211438,
+          "sha512": "af2f46225cd487365a2dcf975de9a3f0b99614923e71dddf2ed9389a6bb705e6a2628e530296a4670e8283158e03f980f1f5f5ba2241d1b9e8f5cea322ba318e",
+          "sha256": "c825ca0f71e9df19dfcd0aaa40be662ea0ce0b46a8d398360ce0050e4b68e92f",
+          "sha1": "f7e589eb970028f651a52f80b5ba7514271daba7",
+          "md5": "778e212722e7961b6d558a710759c509"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.compose.material",
+          "module": "material-icons-extended"
+        },
+        {
+          "group": "androidx.compose.ui",
+          "module": "ui-tooling-preview"
+        },
+        {
+          "group": "androidx.compose",
+          "module": "compose-bom",
+          "version": {
+            "requires": "2025.10.01"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          }
+        },
+        {
+          "group": "androidx.compose.ui",
+          "module": "ui"
+        },
+        {
+          "group": "androidx.compose.foundation",
+          "module": "foundation"
+        },
+        {
+          "group": "androidx.compose.material3",
+          "module": "material3"
+        },
+        {
+          "group": "androidx.compose.animation",
+          "module": "animation"
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "compose-design-system-0.1.0.aar",
+          "url": "compose-design-system-0.1.0.aar",
+          "size": 1211438,
+          "sha512": "af2f46225cd487365a2dcf975de9a3f0b99614923e71dddf2ed9389a6bb705e6a2628e530296a4670e8283158e03f980f1f5f5ba2241d1b9e8f5cea322ba318e",
+          "sha256": "c825ca0f71e9df19dfcd0aaa40be662ea0ce0b46a8d398360ce0050e4b68e92f",
+          "sha1": "f7e589eb970028f651a52f80b5ba7514271daba7",
+          "md5": "778e212722e7961b6d558a710759c509"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "compose-design-system-0.1.0-sources.jar",
+          "url": "compose-design-system-0.1.0-sources.jar",
+          "size": 113886,
+          "sha512": "9823dc9f47f19de8ad5033073cce60b9a68c58d632b6827248ab907824a7c457cebb1e95450c50743e0159aac05aaab9925a12c8a002176a55ce0eb191a5789d",
+          "sha256": "403483448b3a89e372671c3e3842ec05722dd489e65814393e94ef0b6e298549",
+          "sha1": "642b3c63a230dbd88138744ac765e624370d35a4",
+          "md5": "919fa74c1b758d4cd1c222c6968e8a66"
+        }
+      ]
+    }
+  ]
+}
