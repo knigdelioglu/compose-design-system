@@ -152,11 +152,10 @@ fun ArcMoneyInput(
                     },
                     modifier = Modifier.weight(1f).onFocusChanged {
                         focused = it.isFocused
-                        if (!it.isFocused) {
-                            text = valueMinorUnits?.let { amount -> ArcMoneyInputRules.formatEditable(amount, currencyCode, locale) }.orEmpty()
-                        } else {
-                            text = valueMinorUnits?.let { amount -> ArcMoneyInputRules.formatEditable(amount, currencyCode, locale) }.orEmpty()
-                        }
+                        text = valueMinorUnits?.let { amount ->
+                            ArcMoneyInputRules.formatEditable(amount, currencyCode, locale)
+                        }.orEmpty()
+                        if (!it.isFocused) precisionError = false
                     }
                         .semantics {
                             contentDescription = label
