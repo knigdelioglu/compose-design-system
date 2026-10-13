@@ -46,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -671,6 +672,10 @@ fun <T> ArcCarousel(
 ) {
     var currentIndex by rememberSaveable { mutableIntStateOf(0) }
     val safeIndex = currentIndex.coerceIn(0, (items.size - 1).coerceAtLeast(0))
+    LaunchedEffect(items.size) {
+        // Permanently reconcile the saved index after the collection shrinks.
+        if (currentIndex != safeIndex) currentIndex = safeIndex
+    }
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
