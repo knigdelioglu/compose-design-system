@@ -123,7 +123,8 @@ fun ArcDonutChart(
     val safeSegments = segments.map { segment ->
         segment.copy(value = segment.value.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f)
     }
-    val total = safeSegments.sumOf { it.value.toDouble() }.coerceAtLeast(1.0)
+    // Fractions such as 0.2 + 0.3 must fill the full 360°, not only part of the ring.
+    val total = safeSegments.sumOf { it.value.toDouble() }.takeIf { it > 0.0 } ?: 1.0
     val colors = ArcTheme.colors
 
     ArcCard(modifier = modifier) {
