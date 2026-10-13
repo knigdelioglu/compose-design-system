@@ -41,7 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.LocalActivity
 import androidx.core.view.WindowCompat
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -129,7 +129,7 @@ private fun ComponentGallery() {
     var reducedMotion by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf(GalleryPage.Existing) }
 
-    val activity = LocalContext.current as? ComponentActivity
+    val activity = LocalActivity.current
     SideEffect {
         activity?.window?.let { window ->
             WindowCompat.getInsetsController(window, window.decorView).apply {
