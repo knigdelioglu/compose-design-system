@@ -34,7 +34,7 @@ maven("https://raw.githubusercontent.com/knigdelioglu/compose-design-system/mave
 
 **A repository branch is not an immutable package registry.** Published coordinates are never intentionally overwritten; branch write access must be restricted and old artefacts retained. GitHub Pages or a managed public Maven repository can replace this distribution transport later without changing artifact coordinates. GitHub Packages is **not** used for consumer downloads because its Maven registry requires tokens even for public packages.
 
-Do not create the tag before the Plan/Puanla opt-in compatibility builds succeed. Releasing does not automatically publish either app's APK.
+Before tagging, test the locally staged Maven repository in both consumers with -PcomposePublishedVersion=0.1.0-SNAPSHOT and -PcomposePublishedRepositoryDir=<absolute Compose checkout>/build/p0-maven-repository. Generate this repository from the candidate source branch. Do not publish the consumer applications until their compatibility checks pass. Releasing does not automatically publish either app's APK.
 
 ## Consumer migration and rollback
 
