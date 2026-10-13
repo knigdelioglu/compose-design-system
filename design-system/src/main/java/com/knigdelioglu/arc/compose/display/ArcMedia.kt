@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -215,14 +216,17 @@ fun ArcFileUpload(
                 Text(fileName, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = ArcTheme.colors.foreground)
                 Text(fileSizeString, fontSize = 12.sp, color = ArcTheme.colors.textMuted)
             }
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Kaldır",
-                tint = ArcTheme.colors.textMuted,
-                modifier = Modifier
-                    .size(18.dp)
-                    .clickable { onClear() }
-            )
+            IconButton(
+                onClick = onClear,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Dosyayı kaldır",
+                    tint = ArcTheme.colors.textMuted,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }
