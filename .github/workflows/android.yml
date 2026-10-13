@@ -39,6 +39,13 @@ jobs:
           test -f build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT/compose-design-system-0.1.0-SNAPSHOT.pom
       - name: Compile gallery against published Maven artifact (not a project dependency)
         run: ./gradlew :gallery:assembleDebug -PcomposeSmokePublished=true
+      - name: Export P0 Maven repository for pre-release consumer tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-p0-maven-staging
+          path: build/p0-maven-repository/
+          if-no-files-found: error
+          retention-days: 7
 
   compose-ui-tests:
     runs-on: ubuntu-latest
