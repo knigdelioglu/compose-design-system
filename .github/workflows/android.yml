@@ -33,6 +33,8 @@ jobs:
         run: ./gradlew :design-system:publishReleasePublicationToStagingRepository
       - name: Validate Maven artifact and metadata exist
         run: |
+          echo "Published Maven repository files:"
+          find build/p0-maven-repository -maxdepth 8 -type f | sort | head -60
           test -f build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT/compose-design-system-0.1.0-SNAPSHOT.aar
           test -f build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT/compose-design-system-0.1.0-SNAPSHOT.pom
       - name: Compile gallery against published Maven artifact (not a project dependency)
