@@ -11,6 +11,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        if (providers.gradleProperty("composeSmokePublished").orNull == "true") {
+            maven { url = uri(file("build/p0-maven-repository")) }
+        }
     }
 }
 

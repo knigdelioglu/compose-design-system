@@ -1,0 +1,119 @@
+name: Publish versioned Compose library
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+    branches:
+      - main
+    paths:
+      - '.github/compose-library.version'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: compose-design-system-maven-publication
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      library_version: ${{ steps.release-version.outputs.library_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate immutable release coordinate
+        id: release-version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="$(tr -d '[:space:]' < .github/compose-library.version)"
+          fi
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]] || {
+            echo "::error::Invalid release version $version"; exit 1;
+          }
+          echo "library_version=$version" >> "$GITHUB_OUTPUT"
+          echo "LIBRARY_VERSION=$version" >> "$GITHUB_ENV"
+          # Fail closed for any network/auth failure, and never overwrite Maven coordinates.
+          path="com/knigdelioglu/compose-design-system/$version/compose-design-system-$version.pom"
+          url="https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$path?ref=maven-repository"
+          http="$(curl -L --silent --show-error --retry 2 --output /tmp/compose-check.json --write-out '%{http_code}' -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$url")"
+          case "$http" in
+            404) echo "Maven coordinate is available: $version";;
+            200) echo "::error::Maven version $version already exists"; exit 1;;
+            *) echo "::error::Could not verify Maven coordinate (HTTP $http)"; exit 1;;
+          esac
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build, unit-test, lint and validate public API
+        run: ./gradlew :design-system:assembleRelease :design-system:testDebugUnitTest :design-system:lintDebug :design-system:apiCheck --no-daemon
+      - name: Stage immutable versioned AAR and Maven metadata
+        run: ./gradlew :design-system:publishReleasePublicationToStagingRepository -PcomposeLibraryVersion="$LIBRARY_VERSION" --no-daemon
+      - name: Smoke-build Gallery against the versioned AAR
+        run: ./gradlew :gallery:assembleDebug -PcomposeSmokePublished=true -PcomposeLibraryVersion="$LIBRARY_VERSION" --no-daemon
+      - name: Verify required publication files
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="build/p0-maven-repository/com/knigdelioglu/compose-design-system/$LIBRARY_VERSION"
+          for extension in aar pom module; do
+            test -s "$dir/compose-design-system-$LIBRARY_VERSION.$extension"
+          done
+      - name: Store exact Maven files for consumer emulators and release job
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-p0-maven-staging
+          path: build/p0-maven-repository/
+          retention-days: 7
+          if-no-files-found: error
+
+  consumer-tests:
+    name: Verify AAR on Plan and Puanla emulators
+    needs: stage
+    uses: ./.github/workflows/consumer-compat.yml
+    with:
+      library_version: ${{ needs.stage.outputs.library_version }}
+
+  publish:
+    name: Publish only after both consumer emulator suites pass
+    needs: [stage, consumer-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: compose-p0-maven-staging
+          path: staged-maven
+      - name: Ensure the release artefacts match the vetted coordinate
+        env:
+          LIBRARY_VERSION: ${{ needs.stage.outputs.library_version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="staged-maven/com/knigdelioglu/compose-design-system/$LIBRARY_VERSION"
+          for extension in aar pom module; do
+            test -s "$dir/compose-design-system-$LIBRARY_VERSION.$extension"
+          done
+      - name: Publish verified public Maven repository
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: maven-repository
+          publish_dir: ./staged-maven
+          keep_files: true
+          enable_jekyll: false

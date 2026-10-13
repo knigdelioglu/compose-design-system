@@ -31,7 +31,12 @@ android {
 }
 
 dependencies {
-    implementation(project(":design-system"))
+    if (providers.gradleProperty("composeSmokePublished").orNull == "true") {
+        val libraryVersion = providers.gradleProperty("composeLibraryVersion").orElse("0.1.0-SNAPSHOT").get()
+        implementation("com.knigdelioglu:compose-design-system:$libraryVersion")
+    } else {
+        implementation(project(":design-system"))
+    }
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)

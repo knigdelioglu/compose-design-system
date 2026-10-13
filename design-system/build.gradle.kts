@@ -3,7 +3,11 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.binary.compatibility.validator)
+    `maven-publish`
 }
+
+group = "com.knigdelioglu"
+version = providers.gradleProperty("composeLibraryVersion").orElse("0.1.0-SNAPSHOT").get()
 
 android {
     namespace = "com.knigdelioglu.arc.compose"
@@ -40,15 +44,21 @@ android {
     buildFeatures {
         compose = true
     }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
     val composeBom = platform(libs.compose.bom)
-    implementation(composeBom)
-    implementation(libs.compose.ui)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
-    implementation(libs.compose.animation)
+    api(composeBom)
+    api(libs.compose.ui)
+    api(libs.compose.foundation)
+    api(libs.compose.material3)
+    api(libs.compose.animation)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.compose.ui.tooling.preview)
 
@@ -60,4 +70,36 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+// Publish the AAR and its Gradle/POM metadata together, never an isolated AAR.
+// The staging repository is also consumed by the Gallery smoke test in CI.
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "com.knigdelioglu"
+                artifactId = "compose-design-system"
+                version = project.version.toString()
+                pom {
+                    name.set("Compose Design System")
+                    description.set("Reusable native Android Compose components for Plan and Puanla")
+                    url.set("https://github.com/knigdelioglu/compose-design-system")
+                    licenses {
+                        license {
+                            name.set("MIT License")
+                            url.set("https://opensource.org/licenses/MIT")
+                        }
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                name = "staging"
+                url = uri(rootProject.file("build/p0-maven-repository"))
+            }
+        }
+    }
 }
