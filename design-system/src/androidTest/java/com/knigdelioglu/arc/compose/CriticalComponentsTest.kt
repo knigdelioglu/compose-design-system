@@ -29,6 +29,7 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.withKeyDown
@@ -53,6 +54,7 @@ import com.knigdelioglu.arc.compose.controls.ArcShortcutRecorder
 import com.knigdelioglu.arc.compose.controls.ArcSwitch
 import com.knigdelioglu.arc.compose.controls.ArcTimePicker
 import com.knigdelioglu.arc.compose.controls.ArcColorPicker
+import com.knigdelioglu.arc.compose.controls.ArcMoneyInput
 import com.knigdelioglu.arc.compose.navigation.ArcCarousel
 import com.knigdelioglu.arc.compose.datavis.ArcDonutChart
 import com.knigdelioglu.arc.compose.datavis.ArcDonutSegment
@@ -753,6 +755,27 @@ class CriticalComponentsTest {
         }
         compose.onNodeWithContentDescription("Renk 2").performClick()
         compose.runOnIdle { assertEquals(Color.Blue, color) }
+    }
+
+    @Test
+    fun invalidMoneyPasteDoesNotOverwriteTheOwnedAmount() {
+        var amount by mutableStateOf<Long?>(123450L)
+        compose.setContent {
+            ArcTheme {
+                ArcMoneyInput(
+                    valueMinorUnits = amount,
+                    onValueChange = { amount = it },
+                    label = "Amount",
+                    locale = java.util.Locale.US
+                )
+            }
+        }
+        compose.onNodeWithContentDescription("Amount").performTextReplacement("12abc34")
+        compose.runOnIdle { assertEquals(123450L, amount) }
+        compose.onNodeWithText("Enter a valid amount with up to 2 decimal places").assertExists()
+        compose.onNodeWithContentDescription("Amount").performTextReplacement("12.34")
+        compose.runOnIdle { assertEquals(1234L, amount) }
+        compose.onNodeWithText("Enter a valid amount with up to 2 decimal places").assertDoesNotExist()
     }
 
     @Test
