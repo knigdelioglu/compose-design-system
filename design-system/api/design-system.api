@@ -553,7 +553,7 @@ public final class com/knigdelioglu/arc/compose/controls/ComposableSingletons$Ar
 	public final fun getLambda$-1386521942$design_system_release ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-1644082226$design_system_release ()Lkotlin/jvm/functions/Function3;
 	public final fun getLambda$-463354516$design_system_release ()Lkotlin/jvm/functions/Function3;
-	public final fun getLambda$-565873049$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1224390283$design_system_release ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1929965648$design_system_release ()Lkotlin/jvm/functions/Function3;
 }
 
@@ -880,7 +880,8 @@ public final class com/knigdelioglu/arc/compose/display/ComposableSingletons$Arc
 	public final fun getLambda$-1497530640$design_system_release ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$-500277322$design_system_release ()Lkotlin/jvm/functions/Function2;
 	public final fun getLambda$1397756670$design_system_release ()Lkotlin/jvm/functions/Function2;
-	public final fun getLambda$1803975074$design_system_release ()Lkotlin/jvm/functions/Function2;
+	public final fun getLambda$1803975074$design_system_release
+	public final fun getLambda$481946069$design_system_release ()Lkotlin/jvm/functions/Function2; ()Lkotlin/jvm/functions/Function2;
 }
 
 public final class com/knigdelioglu/arc/compose/editor/ArcRichTextEditorKt {
