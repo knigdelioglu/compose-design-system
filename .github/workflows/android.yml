@@ -35,8 +35,12 @@ jobs:
         run: |
           echo "Published Maven repository files:"
           find build/p0-maven-repository -maxdepth 8 -type f | sort | head -60
-          test -f build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT/compose-design-system-0.1.0-SNAPSHOT.aar
-          test -f build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT/compose-design-system-0.1.0-SNAPSHOT.pom
+          publication="build/p0-maven-repository/com/knigdelioglu/compose-design-system/0.1.0-SNAPSHOT"
+          test -s "$publication/maven-metadata.xml"
+          # File-backed Maven SNAPSHOT repositories use timestamped artifact filenames.
+          find "$publication" -maxdepth 1 -type f -name '*.aar' | grep -q .
+          find "$publication" -maxdepth 1 -type f -name '*.pom' | grep -q .
+          find "$publication" -maxdepth 1 -type f -name '*.module' | grep -q .
       - name: Compile gallery against published Maven artifact (not a project dependency)
         run: ./gradlew :gallery:assembleDebug -PcomposeSmokePublished=true
       - name: Export P0 Maven repository for pre-release consumer tests
