@@ -150,12 +150,15 @@ fun ArcMoneyInput(
                         precisionError = typed.isNotBlank() && typed != symbols.decimalSeparator.toString() && parsed == null
                         if (typed.isEmpty()) onValueChange(null) else if (parsed != null) onValueChange(parsed)
                     },
-                    modifier = Modifier.weight(1f).onFocusChanged {
-                        focused = it.isFocused
-                        text = valueMinorUnits?.let { amount ->
-                            ArcMoneyInputRules.formatEditable(amount, currencyCode, locale)
-                        }.orEmpty()
-                        if (!it.isFocused) precisionError = false
+                    modifier = Modifier.weight(1f).onFocusChanged { focusState ->
+                        val lostFocus = focused && !focusState.isFocused
+                        focused = focusState.isFocused
+                        if (lostFocus) {
+                            text = valueMinorUnits?.let { amount ->
+                                ArcMoneyInputRules.formatEditable(amount, currencyCode, locale)
+                            }.orEmpty()
+                            precisionError = false
+                        }
                     }
                         .semantics {
                             contentDescription = label
