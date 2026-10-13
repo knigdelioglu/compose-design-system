@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   plan-android-ui:
-    name: Plan binary UI (compact, portrait, landscape)
+    name: Compose UI + Plan binary UI (compact, portrait, landscape)
     runs-on: ubuntu-latest
     timeout-minutes: 65
     steps:
@@ -25,6 +25,10 @@ jobs:
           ref: main
           path: plan
           persist-credentials: false
+      - name: Checkout matching Compose candidate for its own UI tests
+        uses: actions/checkout@v4
+        with:
+          path: compose-design-system
       - uses: actions/download-artifact@v4
         with:
           name: compose-p0-maven-staging
@@ -60,7 +64,9 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: |
-            cd plan
+            cd compose-design-system
+            ./gradlew :design-system:connectedDebugAndroidTest --no-daemon
+            cd ../plan
             bash .github/scripts/android-ui-display.sh compact
             bash .github/scripts/android-ui-display.sh tablet-portrait
             bash .github/scripts/android-ui-display.sh tablet-landscape
