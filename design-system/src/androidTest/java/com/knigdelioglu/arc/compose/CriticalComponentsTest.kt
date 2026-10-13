@@ -695,6 +695,32 @@ class CriticalComponentsTest {
         compose.runOnIdle { assertEquals("top", dismissed) }
     }
     @Test
+    fun malformedCustomSignatureExportsDoNotContainNonFiniteCoordinates() {
+        val signature = ArcSignature(
+            strokes = listOf(
+                com.knigdelioglu.arc.compose.controls.ArcSignatureStroke(
+                    points = listOf(
+                        com.knigdelioglu.arc.compose.controls.ArcSignaturePoint(
+                            Float.NaN, Float.POSITIVE_INFINITY, pressure = Float.NaN
+                        ),
+                        com.knigdelioglu.arc.compose.controls.ArcSignaturePoint(
+                            0.5f, 0.75f, pressure = Float.NEGATIVE_INFINITY
+                        )
+                    ),
+                    color = Color.Blue,
+                    widthPx = 8f
+                )
+            ),
+            canvasWidthPx = 200,
+            canvasHeightPx = 200
+        )
+        val svg = signature.toSvg()
+        assertTrue(!svg.contains("NaN"))
+        assertTrue(!svg.contains("Infinity"))
+        assertTrue(signature.toPngBytes().isNotEmpty())
+    }
+
+    @Test
     fun signatureSvgRetainsPressureVariationAndOpacity() {
         val signature = ArcSignature(
             strokes = listOf(
