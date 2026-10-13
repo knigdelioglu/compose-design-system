@@ -118,7 +118,14 @@ fun ArcDonutChart(
     centerTitle: String = "Toplam",
     centerSubtitle: String = ""
 ) {
-    val total = (segments.sumOf { it.value.toDouble() }).toFloat().coerceAtLeast(1f)
+    // Do not let negative, NaN, infinite or overflowing totals reach drawArc.
+    // Use Double for accumulation because the sum of finite Float values can overflow Float.
+    val safeSegments = remember(segments) {
+        segments.map { segment ->
+            segment.copy(value = segment.value.takeIf(Float::isFinite)?.coerceAtLeast(0f) ?: 0f)
+        }
+    }
+    val total = safeSegments.sumOf { it.value.toDouble() }.coerceAtLeast(1.0)
     val colors = ArcTheme.colors
 
     ArcCard(modifier = modifier) {
@@ -134,8 +141,8 @@ fun ArcDonutChart(
                     val topLeft = Offset((size.width - diameter) / 2, (size.height - diameter) / 2)
                     val arcSize = Size(diameter, diameter)
 
-                    segments.forEach { seg ->
-                        val sweep = (seg.value / total) * 360f
+                    safeSegments.forEach { seg ->
+                        val sweep = (seg.value.toDouble() / total * 360.0).toFloat()
                         drawArc(
                             color = seg.color,
                             startAngle = startAngle,
@@ -155,7 +162,7 @@ fun ArcDonutChart(
             }
             Spacer(Modifier.width(20.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                segments.forEach { seg ->
+                safeSegments.forEach { seg ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(modifier = Modifier.size(10.dp), shape = CircleShape, color = seg.color) {}
                         Spacer(Modifier.width(8.dp))
