@@ -713,7 +713,7 @@ class CriticalComponentsTest {
         val paths = svg.split("<path").drop(1)
         assertEquals(2, paths.size)
         fun attribute(path: String, name: String): Float =
-            path.substringAfter("$name=\\\"").substringBefore("\\\"").toFloat()
+            path.substringAfter("$name=\"").substringBefore("\"").toFloat()
         assertEquals(2f, attribute(paths[0], "stroke-width"), 0.01f)
         assertEquals(5f, attribute(paths[1], "stroke-width"), 0.01f)
         assertEquals(0.5f, attribute(paths[0], "stroke-opacity"), 0.01f)
