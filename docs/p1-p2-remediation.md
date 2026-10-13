@@ -15,7 +15,7 @@
 ## P2 — targeted, not speculative
 
 - **Graphics correctness:** Signature SVG export now uses the same per-segment pressure interpolation as PNG, rather than a single average-pressure line for a whole stroke. Single-point strokes render as circles and alpha is retained.
-- **Recomposition work:** Bar and sparkline input sanitization, and donut normalization, are remembered by the input list instead of recalculated on unrelated recompositions.
+- **Recomposition correctness:** Chart normalization remains derived from each currently observed input list so changes to Compose snapshot-backed mutable lists cannot be hidden by stale `remember(list)` caches. Optimize further only after benchmarking and explicit immutable-input contracts.
 - **State retention:** Image comparison split position persists through configuration recreation.
 - **Example migration:** `advanced/examples/AdvancedComponentsExample.kt` currently appears in the published binary API. Moving/removing it outright would be a breaking change. Keep it for this compatible release; relocate and deprecate intentionally with a major-version API migration rather than deleting it silently.
 
