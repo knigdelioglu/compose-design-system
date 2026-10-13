@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,10 +60,14 @@ object ArcMoneyInputRules {
             input.forEach { char ->
                 when {
                     char in '0'..'9' -> append(char)
-                    char == decimal && !decimalSeen -> { append('.'); decimalSeen = true }
+                    char == decimal -> {
+                        if (decimalSeen) return null
+                        append('.')
+                        decimalSeen = true
+                    }
                     char == grouping || char.isWhitespace() || char == '\u00A0' -> Unit
-                    char == '-' || char == '+' -> return null
-                    else -> Unit // Currency symbols are common when pasting a formatted amount.
+                    Character.getType(char) == Character.CURRENCY_SYMBOL.toInt() -> Unit
+                    else -> return null // Never silently turn malformed pasted text into a different amount.
                 }
             }
         }
@@ -109,14 +114,14 @@ fun ArcMoneyInput(
 ) {
     val colors = ArcTheme.colors
     var focused by remember { mutableStateOf(false) }
-    var text by remember { mutableStateOf("") }
-    var precisionError by remember { mutableStateOf(false) }
-    LaunchedEffect(valueMinorUnits, currencyCode) {
+    var text by rememberSaveable { mutableStateOf("") }
+    var precisionError by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(valueMinorUnits, currencyCode, locale) {
         if (!focused) text = valueMinorUnits?.let { ArcMoneyInputRules.formatEditable(it, currencyCode, locale) }.orEmpty()
     }
     val fractionDigits = ArcMoneyInputRules.fractionDigits(currencyCode)
     val symbols = remember(locale) { DecimalFormatSymbols.getInstance(locale) }
-    val displayedError = errorMessage ?: if (precisionError) "Use up to $fractionDigits decimal places" else null
+    val displayedError = errorMessage ?: if (precisionError) "Enter a valid amount with up to $fractionDigits decimal places" else null
 
     Column(modifier = modifier) {
         Text(label, color = colors.textSecondary, fontSize = 13.sp)
@@ -140,11 +145,10 @@ fun ArcMoneyInput(
                 BasicTextField(
                     value = text,
                     onValueChange = { typed ->
-                        val filtered = typed.filter { it in '0'..'9' || it == symbols.decimalSeparator || it == symbols.groupingSeparator }
-                        text = filtered
-                        val parsed = ArcMoneyInputRules.parseMinorUnits(filtered, fractionDigits, locale)
-                        precisionError = filtered.isNotEmpty() && filtered != symbols.decimalSeparator.toString() && parsed == null
-                        if (filtered.isEmpty()) onValueChange(null) else if (parsed != null) onValueChange(parsed)
+                        text = typed
+                        val parsed = ArcMoneyInputRules.parseMinorUnits(typed, fractionDigits, locale)
+                        precisionError = typed.isNotBlank() && typed != symbols.decimalSeparator.toString() && parsed == null
+                        if (typed.isEmpty()) onValueChange(null) else if (parsed != null) onValueChange(parsed)
                     },
                     modifier = Modifier.weight(1f).onFocusChanged {
                         focused = it.isFocused
