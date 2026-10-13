@@ -710,9 +710,13 @@ class CriticalComponentsTest {
             canvasHeightPx = 200
         )
         val svg = signature.toSvg()
-        assertTrue(svg.contains("stroke-width=\"2.0\""))
-        assertTrue(svg.contains("stroke-width=\"5.0\""))
-        assertTrue(svg.contains("stroke-opacity=\"0.5\""))
+        val paths = svg.split("<path").drop(1)
+        assertEquals(2, paths.size)
+        fun attribute(path: String, name: String): Float =
+            path.substringAfter("$name=\\\"").substringBefore("\\\"").toFloat()
+        assertEquals(2f, attribute(paths[0], "stroke-width"), 0.01f)
+        assertEquals(5f, attribute(paths[1], "stroke-width"), 0.01f)
+        assertEquals(0.5f, attribute(paths[0], "stroke-opacity"), 0.01f)
     }
 
     @Test
