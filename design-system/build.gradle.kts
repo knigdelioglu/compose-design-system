@@ -98,7 +98,7 @@ afterEvaluate {
         repositories {
             maven {
                 name = "staging"
-                url = uri(rootProject.layout.buildDirectory.dir("p0-maven-repository"))
+                url = uri(rootProject.file("build/p0-maven-repository"))
             }
         }
     }
