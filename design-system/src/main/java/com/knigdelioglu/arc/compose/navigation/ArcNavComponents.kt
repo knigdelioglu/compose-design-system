@@ -52,6 +52,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -668,7 +669,7 @@ fun <T> ArcCarousel(
     modifier: Modifier = Modifier,
     itemContent: @Composable (T) -> Unit
 ) {
-    var currentIndex by remember { mutableIntStateOf(0) }
+    var currentIndex by rememberSaveable { mutableIntStateOf(0) }
     val safeIndex = currentIndex.coerceIn(0, (items.size - 1).coerceAtLeast(0))
 
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
