@@ -55,9 +55,25 @@ object ArcMoneyInputRules {
         val symbols = DecimalFormatSymbols.getInstance(locale)
         val decimal = symbols.decimalSeparator
         val grouping = symbols.groupingSeparator
+        // Currency signs and surrounding spaces are allowed only outside the number.
+        // Never concatenate digits separated by an unsupported currency sign or whitespace.
+        fun isCurrencySymbol(char: Char): Boolean =
+            Character.getType(char) == Character.CURRENCY_SYMBOL.toInt()
+        val trimmed = input.trim()
+        val number = trimmed.trimStart { it.isWhitespace() || isCurrencySymbol(it) }
+            .trimEnd { it.isWhitespace() || isCurrencySymbol(it) }
+        if (number.isEmpty()) return null
+        val integerPart = number.substringBefore(decimal)
+        if (grouping != decimal && grouping in integerPart) {
+            val groups = integerPart.split(grouping)
+            if (groups.first().length !in 1..3 ||
+                groups.drop(1).any { it.length != 3 } ||
+                groups.any { group -> group.any { it !in '0'..'9' } }
+            ) return null
+        }
         val normalized = buildString {
             var decimalSeen = false
-            input.forEach { char ->
+            number.forEach { char ->
                 when {
                     char in '0'..'9' -> append(char)
                     char == decimal -> {
@@ -65,9 +81,8 @@ object ArcMoneyInputRules {
                         append('.')
                         decimalSeen = true
                     }
-                    char == grouping || char.isWhitespace() || char == '\u00A0' -> Unit
-                    Character.getType(char) == Character.CURRENCY_SYMBOL.toInt() -> Unit
-                    else -> return null // Never silently turn malformed pasted text into a different amount.
+                    char == grouping && !decimalSeen -> Unit
+                    else -> return null // Invalid separators, signs, symbols or embedded spaces.
                 }
             }
         }
