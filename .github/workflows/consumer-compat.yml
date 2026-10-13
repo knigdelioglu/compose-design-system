@@ -1,0 +1,115 @@
+name: Verify published AAR in both Android apps
+
+on:
+  workflow_call:
+    inputs:
+      library_version:
+        description: "Version contained in staged Maven repository"
+        type: string
+        default: "0.1.0-SNAPSHOT"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan-android-ui:
+    name: Plan binary UI (${{ matrix.display }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        display: [compact, tablet-portrait, tablet-landscape]
+    steps:
+      - name: Checkout stable Plan main
+        uses: actions/checkout@v4
+        with:
+          repository: knigdelioglu/plan
+          ref: main
+          path: plan
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: compose-p0-maven-staging
+          path: staged-maven
+      - name: Verify AAR repository
+        run: |
+          test -d "staged-maven/com/knigdelioglu/compose-design-system/${{ inputs.library_version }}"
+          find staged-maven -type f -name '*.aar' | grep -q .
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable emulator KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          test -r /dev/kvm && test -w /dev/kvm
+      - name: Execute Plan AAR-backed UI tests
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ORG_GRADLE_PROJECT_composePublishedVersion: ${{ inputs.library_version }}
+          ORG_GRADLE_PROJECT_composePublishedRepositoryDir: ${{ github.workspace }}/staged-maven
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: cd plan && bash .github/scripts/android-ui-display.sh ${{ matrix.display }}
+
+  puanla-android-ui:
+    name: Puanla binary tablet UI
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout stable Puanla main
+        uses: actions/checkout@v4
+        with:
+          repository: knigdelioglu/puanla
+          ref: main
+          path: puanla
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: compose-p0-maven-staging
+          path: staged-maven
+      - name: Verify AAR repository
+        run: |
+          test -d "staged-maven/com/knigdelioglu/compose-design-system/${{ inputs.library_version }}"
+          find staged-maven -type f -name '*.aar' | grep -q .
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable emulator KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          test -r /dev/kvm && test -w /dev/kvm
+      - name: Execute Puanla AAR-backed UI tests
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ORG_GRADLE_PROJECT_composePublishedVersion: ${{ inputs.library_version }}
+          ORG_GRADLE_PROJECT_composePublishedRepositoryDir: ${{ github.workspace }}/staged-maven
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-boot-timeout: 900
+          disable-animations: true
+          script: cd puanla && ./gradlew :app:connectedDebugAndroidTest --no-daemon
