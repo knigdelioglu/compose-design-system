@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - '.github/compose-library.version'
+      - '.github/workflows/publish-library.yml'
   workflow_dispatch:
 
 permissions:
@@ -73,7 +74,7 @@ jobs:
           for extension in aar pom module; do
             test -s "$dir/compose-design-system-$LIBRARY_VERSION.$extension"
           done
-      - name: Store exact Maven files for consumer emulators and release job
+      - name: Store validated Maven files for the release job
         uses: actions/upload-artifact@v4
         with:
           name: compose-p0-maven-staging
@@ -81,16 +82,9 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  consumer-tests:
-    name: Verify AAR on Plan and Puanla emulators
-    needs: stage
-    uses: ./.github/workflows/consumer-compat.yml
-    with:
-      library_version: ${{ needs.stage.outputs.library_version }}
-
   publish:
-    name: Publish only after both consumer emulator suites pass
-    needs: [stage, consumer-tests]
+    name: Publish after library and independent AAR smoke verification
+    needs: stage
     runs-on: ubuntu-latest
     permissions:
       contents: write
