@@ -4,9 +4,9 @@
 
 | Component | Issue | Remediation | Verification |
 | --- | --- | --- | --- |
-| `ArcMoneyInputRules` and `ArcMoneyInput` | Unknown pasted characters and repeated separators could silently alter amounts | Reject malformed values; leave the external integer minor-unit value untouched on invalid input; show an explicit error | `ArcMoneyInputRulesTest` includes invalid letters, exponent syntax, signs, duplicate decimals and overflow |
+| `ArcMoneyInputRules` and `ArcMoneyInput` | Unknown pasted characters and repeated separators could silently alter amounts | Reject malformed values and grouping/currency symbols embedded in numbers; preserve in-progress draft on focus gain and the external integer amount on invalid input; show an explicit error | `ArcMoneyInputRulesTest` includes invalid letters, grouping, embedded symbols, signs, duplicate decimals and overflow; UI test checks owner value is unchanged |
 | `ArcDonutChart` | NaN, infinities, negative counts or overflowing Float totals could reach Canvas | Normalize each segment to finite nonnegative Float and sum in Double | `CriticalComponentsTest` checks invalid legend values and render stability |
-| `ArcCarousel`, `ArcResizablePanels`, `ArcCalendar`, `ArcImageCompare` | Navigation/position reset on activity recreation | Save primitive state using `rememberSaveable`, preserving existing parameter signatures | UI tests for carousel bounds and existing panel interactions; rotation smoke test recommended |
+| `ArcCarousel`, `ArcResizablePanels`, `ArcCalendar`, `ArcImageCompare` | Navigation/position reset on activity recreation | Save primitive state using `rememberSaveable`, including collapsed panel widths and carousel index reconciliation on collection shrink, preserving existing parameter signatures | UI tests cover carousel bounds, save/restore, and saved panel proportions |
 | `ArcColorPicker`, `ArcFileUpload`, calendar month controls | Undersized touch targets, limited semantics | Use 48dp touch surfaces for picker/file removal/month navigation; selectable color semantics and horizontal scrolling | Color-selection instrumentation regression |
 | Gallery | Theme switch left system bar icons at the wrong contrast, light by default even on a dark device | Initialize from the device's dark theme and update status/navigation icon contrast; add safe drawing insets | Gallery emulator smoke test |
 
@@ -14,8 +14,9 @@
 
 ## P2 — targeted, not speculative
 
-- **Graphics correctness:** Signature SVG export now uses the same per-segment pressure interpolation as PNG, rather than a single average-pressure line for a whole stroke. Single-point strokes render as circles and alpha is retained.
+- **Graphics correctness:** Signature SVG export now uses the same per-segment pressure interpolation as PNG, rather than a single average-pressure line for a whole stroke. Single-point strokes render as circles, alpha is retained, and caller-supplied nonfinite coordinates, pressure, and widths are sanitized.
 - **Recomposition correctness:** Chart normalization remains derived from each currently observed input list so changes to Compose snapshot-backed mutable lists cannot be hidden by stale `remember(list)` caches. Optimize further only after benchmarking and explicit immutable-input contracts.
+- **Numerical bounds:** Sparkline maps finite Float extrema in Double precision to avoid overflow or zero-range division. Donut sweep now correctly fills the ring even when all fractional segment values sum to less than one.
 - **State retention:** Image comparison split position persists through configuration recreation.
 - **Example migration:** `advanced/examples/AdvancedComponentsExample.kt` currently appears in the published binary API. Moving/removing it outright would be a breaking change. Keep it for this compatible release; relocate and deprecate intentionally with a major-version API migration rather than deleting it silently.
 
