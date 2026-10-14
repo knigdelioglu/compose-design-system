@@ -24,6 +24,7 @@ jobs:
     timeout-minutes: 45
     outputs:
       library_version: ${{ steps.release-version.outputs.library_version }}
+      already_published: ${{ steps.release-version.outputs.already_published }}
     steps:
       - uses: actions/checkout@v4
       - name: Validate immutable release coordinate
@@ -48,25 +49,43 @@ jobs:
           url="https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$path?ref=maven-repository"
           http="$(curl -L --silent --show-error --retry 2 --output /tmp/compose-check.json --write-out '%{http_code}' -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$url")"
           case "$http" in
-            404) echo "Maven coordinate is available: $version";;
-            200) echo "::error::Maven version $version already exists"; exit 1;;
+            404)
+              echo "Maven coordinate is available: $version"
+              echo "already_published=false" >> "$GITHUB_OUTPUT"
+              ;;
+            200)
+              # Never overwrite an immutable version. Duplicate tags remain an error.
+              if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+                echo "::error::Maven version $version already exists"
+                exit 1
+              fi
+              echo "::notice::Maven version $version is already published; skipping redundant publication"
+              echo "already_published=true" >> "$GITHUB_OUTPUT"
+              ;;
             *) echo "::error::Could not verify Maven coordinate (HTTP $http)"; exit 1;;
           esac
       - uses: actions/setup-java@v4
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
         with:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
         with:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
       - name: Build, unit-test, lint and validate public API
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
         run: ./gradlew :design-system:assembleRelease :design-system:testDebugUnitTest :design-system:lintDebug :design-system:apiCheck --no-daemon
       - name: Stage immutable versioned AAR and Maven metadata
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
         run: ./gradlew :design-system:publishReleasePublicationToStagingRepository -PcomposeLibraryVersion="$LIBRARY_VERSION" --no-daemon
       - name: Smoke-build Gallery against the versioned AAR
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
         run: ./gradlew :gallery:assembleDebug -PcomposeSmokePublished=true -PcomposeLibraryVersion="$LIBRARY_VERSION" --no-daemon
       - name: Verify required publication files
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -75,6 +94,7 @@ jobs:
             test -s "$dir/compose-design-system-$LIBRARY_VERSION.$extension"
           done
       - name: Store validated Maven files for the release job
+        if: ${{ steps.release-version.outputs.already_published != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: compose-p0-maven-staging
@@ -85,6 +105,7 @@ jobs:
   publish:
     name: Publish after library and independent AAR smoke verification
     needs: stage
+    if: ${{ needs.stage.outputs.already_published != 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
