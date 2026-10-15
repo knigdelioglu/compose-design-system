@@ -53,6 +53,25 @@ jobs:
           if [[ -c /dev/kvm ]]; then sudo chmod a+rw /dev/kvm; fi
           ls -l /dev/kvm || true
           test -c /dev/kvm && test -r /dev/kvm && test -w /dev/kvm
+      - name: Cache Android emulator snapshot
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: android-avd-${{ runner.os }}-api35-google_apis-x86_64-pixel_5-v1
+      - name: Create AVD and save a clean snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: echo "Saved clean Android emulator snapshot."
       - name: Execute Plan AAR-backed UI tests
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -63,8 +82,9 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_5
+          force-avd-creation: false
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: cd compose-design-system && ./gradlew :design-system:connectedDebugAndroidTest --no-daemon && cd ../plan && bash .github/scripts/android-ui-display.sh compact && bash .github/scripts/android-ui-display.sh tablet-portrait && bash .github/scripts/android-ui-display.sh tablet-landscape
 
   puanla-android-ui:
@@ -103,6 +123,25 @@ jobs:
           if [[ -c /dev/kvm ]]; then sudo chmod a+rw /dev/kvm; fi
           ls -l /dev/kvm || true
           test -c /dev/kvm && test -r /dev/kvm && test -w /dev/kvm
+      - name: Cache Android emulator snapshot
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: android-avd-${{ runner.os }}-api36-google_apis-x86_64-pixel_7_pro-v1
+      - name: Create AVD and save a clean snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: echo "Saved clean Android emulator snapshot."
       - name: Execute Puanla AAR-backed UI tests
         uses: reactivecircus/android-emulator-runner@v2
         env:
@@ -113,7 +152,8 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_7_pro
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           emulator-boot-timeout: 900
           disable-animations: true
           script: cd puanla && ./gradlew :app:connectedDebugAndroidTest --no-daemon

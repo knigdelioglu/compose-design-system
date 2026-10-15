@@ -75,12 +75,17 @@ jobs:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
         if: ${{ steps.release-version.outputs.already_published != 'true' }}
-      - name: Build, unit-test, lint and validate public API
+      - name: Build, unit-test, lint, validate API, and stage immutable AAR
         if: ${{ steps.release-version.outputs.already_published != 'true' }}
-        run: ./gradlew :design-system:assembleRelease :design-system:testDebugUnitTest :design-system:lintDebug :design-system:apiCheck --no-daemon
-      - name: Stage immutable versioned AAR and Maven metadata
-        if: ${{ steps.release-version.outputs.already_published != 'true' }}
-        run: ./gradlew :design-system:publishReleasePublicationToStagingRepository -PcomposeLibraryVersion="$LIBRARY_VERSION" --no-daemon
+        run: >-
+          ./gradlew
+          :design-system:assembleRelease
+          :design-system:testDebugUnitTest
+          :design-system:lintDebug
+          :design-system:apiCheck
+          :design-system:publishReleasePublicationToStagingRepository
+          -PcomposeLibraryVersion="$LIBRARY_VERSION"
+          --no-daemon
       - name: Smoke-build Gallery against the versioned AAR
         if: ${{ steps.release-version.outputs.already_published != 'true' }}
         run: ./gradlew :gallery:assembleDebug -PcomposeSmokePublished=true -PcomposeLibraryVersion="$LIBRARY_VERSION" --no-daemon

@@ -21,16 +21,16 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build library and gallery
-        run: ./gradlew :design-system:assembleDebug :gallery:assembleDebug
-      - name: Run JVM tests
-        run: ./gradlew :design-system:testDebugUnitTest
-      - name: Run Android lint
-        run: ./gradlew :design-system:lintDebug :gallery:lintDebug
-      - name: Check Kotlin public API compatibility
-        run: ./gradlew :design-system:apiCheck
-      - name: Publish release AAR to isolated Maven staging repository
-        run: ./gradlew :design-system:publishReleasePublicationToStagingRepository
+      - name: Build, test, lint, check API, and stage the release AAR
+        run: >-
+          ./gradlew
+          :design-system:assembleDebug
+          :gallery:assembleDebug
+          :design-system:testDebugUnitTest
+          :design-system:lintDebug
+          :gallery:lintDebug
+          :design-system:apiCheck
+          :design-system:publishReleasePublicationToStagingRepository
       - name: Validate Maven artifact and metadata exist
         run: |
           echo "Published Maven repository files:"
@@ -72,6 +72,25 @@ jobs:
           sudo udevadm trigger --name-match=kvm || true
           if [[ -c /dev/kvm ]]; then sudo chmod a+rw /dev/kvm; fi
           test -c /dev/kvm && test -r /dev/kvm && test -w /dev/kvm
+      - name: Cache Android emulator snapshot
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: android-avd-${{ runner.os }}-api35-google_apis-x86_64-pixel_5-v1
+      - name: Create AVD and save a clean snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: echo "Saved clean Android emulator snapshot."
       - name: Run Compose library UI tests independently of applications
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -79,6 +98,7 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_5
+          force-avd-creation: false
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: ./gradlew :design-system:connectedDebugAndroidTest --no-daemon
